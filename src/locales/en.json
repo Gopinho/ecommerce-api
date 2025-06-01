@@ -1,0 +1,111 @@
+{
+  "auth": {
+    "register_success": "User registered successfully.",
+    "login_success": "Login successful.",
+    "invalid_credentials": "Invalid credentials.",
+    "token_required": "Token required.",
+    "logout_success": "Logout successful.",
+    "user_not_found": "User not found.",
+    "not_authenticated": "Not authenticated.",
+    "access_denied": "Access denied.",
+    "email_in_use": "Email is already in use.",
+    "new_email_required": "New email is required.",
+    "email_changed_success": "Email changed successfully.",
+    "too_many_attempts": "Too many attempts. Try again in 15 minutes."
+  },
+  "cart": {
+    "invalid_data": "Invalid data.",
+    "invalid_quantity": "Invalid quantity.",
+    "item_not_found": "Item not found.",
+    "item_removed": "Item removed."
+  },
+  "token": {
+    "invalid": "Invalid or expired token.",
+    "required": "Token not provided."
+  },
+  "coupon": {
+    "not_found": "Coupon not found.",
+    "limit_reached": "Coupon usage limit reached.",
+    "expired": "Coupon expired.",
+    "min_order_value": "Minimum order value not reached."
+  },
+  "2fa": {
+    "required": "2FA token required.",
+    "invalid_code": "Invalid or expired code.",
+    "activated": "2FA token successfully activated.",
+    "deactivated": "2FA token successfully deactivated.",
+    "invalid_2fa_token": "Invalid 2FA token.",
+    "no_setup": "2FA token not set up.",
+    "not_enabled": "2FA token is not enabled."
+  },
+  "product": {
+    "invalid_data": "Invalid data.",
+    "not_found": "Product not found.",
+    "created": "Product created successfully.",
+    "updated": "Product updated successfully.",
+    "deleted": "Product deleted successfully.",
+    "error_delete": "Error deleting product.",
+    "error_create": "Error creating product.",
+    "error_fetch": "Error fetching product.",
+    "error_update": "Error updating product.",
+    "added_wishlist": "Product added to wishlist.",
+    "removed_wishlist": "Product removed from wishlist.",
+    "wishlist_to_cart": "Product moved from wishlist to cart."
+  },
+  "category": {
+    "name_required": "Name required.",
+    "creation_error": "Error creating category.",
+    "fetch_error": "Error fetching category.",
+    "update_error": "Error updating category.",
+    "foreign_key_error": "You cannot delete a category that has associated products.",
+    "deletion_error": "Error deleting category.",
+    "created": "Category created successfully.",
+    "updated": "Category updated successfully.",
+    "deleted": "Category deleted successfully.",
+    "not_found": "Category not found."
+  },
+  "review": {
+    "not_found": "Review not found.",
+    "invalid_rating": "Invalid rating."
+  },
+  "checkout": {
+    "empty_cart": "Cart is empty."
+  },
+  "license": {
+    "renewed": "License renewed.",
+    "revoked": "License revoked.",
+    "expired": "License expired.",
+    "missing_params": "Missing parameters.",
+    "not_found": "License or file not found.",
+    "invalid": "Invalid license.",
+    "invalid_for_product": "License not valid for this product."
+  },
+  "invoice": {
+    "order_not_found": "Order not found.",
+    "no_file": "No file sent.",
+    "invalid_format": "Only images or PDF are allowed."
+  },
+  "upload": {
+    "success": "Proof uploaded successfully!",
+    "no_file": "No file sent.",
+    "invalid_format": "Only images or PDF are allowed."
+  },
+  "audit": {
+    "list_success": "Audit log list.",
+    "not_found": "Audit log not found."
+  },
+  "user": {
+    "data_exported": "Data exported successfully.",
+    "not_found": "User not found.",
+    "no_files_found": "No files found."
+  },
+  "common": {
+    "internal_error": "Internal server error.",
+    "unauthorized": "Unauthorized access.",
+    "forbidden": "Permission denied."
+  },
+  "currency": {
+    "invalid_pair": "Invalid or unsupported currency pair.",
+    "missing_params": "Missing required parameters: amount, from, to."
+  }
+}
