@@ -1,0 +1,43 @@
+name: CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Instalar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar dependências
+        run: npm install
+
+      - name: Lint e testes
+        run: npm run lint && npm test
+
+      - name: Build do projeto
+        run: npm run build
+
+      - name: Deploy para servidor (exemplo com SSH)
+        if: success()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /src/
+            git pull origin main
+            npm install --production
+            npx prisma migrate deploy
+            npm run build
+            pm2 restart ecosystem.config.js || pm2 restart dist/index.js
