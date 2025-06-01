@@ -1,4 +1,3 @@
-
 # 🛒 E-Commerce API - Node.js, TypeScript & Prisma
 
 API completa para uma loja online, com autenticação JWT, 2FA, Stripe, gestão de produtos, carrinho, wishlist, reviews, cupons, licenças, faturas em PDF, logs de auditoria e muito mais.
@@ -29,7 +28,6 @@ API completa para uma loja online, com autenticação JWT, 2FA, Stripe, gestão 
     ├── services/
     ├── types/
     └── utils/
-
 ```
 
 - **controllers/**: Lógica dos endpoints (ex: autenticação, produtos, carrinho, etc)
@@ -58,7 +56,7 @@ API completa para uma loja online, com autenticação JWT, 2FA, Stripe, gestão 
 - Auditoria de login por dispositivo (user-agent e IP)
 - Logs de atividade do utilizador (audit logs)
 - Documentação Swagger/OpenAPI dos endpoints
-- Melhorar tratamento de erros globais (middleware)
+- Tratamento global de erros (middleware)
 - Internacionalização de mensagens de erro e sucesso (pt/en)
 - RBAC avançado: gestão de permissões por grupo
 - Endpoint para logs de auditoria detalhados por utilizador
@@ -81,9 +79,8 @@ API completa para uma loja online, com autenticação JWT, 2FA, Stripe, gestão 
 - CRUD de produtos (admin)
 - CRUD de categorias (admin)
 - Paginação e filtros em listagens
-- Cache de produtos populares (sugestão: Redis)
-- Sistema de notificações (ex: email para admins)
-- Implementar cache de produtos de software populares (ex: Redis)
+- Cache de produtos populares (Redis)
+- Sistema de notificações (ex: email/Telegram para admins)
 - Testes unitários e de integração (Jest/Supertest) para controllers e services principais
 
 ### 4. Carrinho & Checkout
@@ -93,7 +90,6 @@ API completa para uma loja online, com autenticação JWT, 2FA, Stripe, gestão 
 - Aplicação de cupons de desconto (percentual/fixo, limite de uso, valor mínimo, validade)
 - Webhook Stripe para confirmação de pagamento e criação de encomenda
 - Geração de fatura em PDF (pdfkit)
-- Simulação de sistema de devoluções/reembolsos
 - Endpoint para download de todas as faturas/licenças do utilizador
 
 ### 5. Encomendas & Logística
@@ -114,13 +110,12 @@ API completa para uma loja online, com autenticação JWT, 2FA, Stripe, gestão 
 - Variáveis de ambiente (.env) e validação
 - Internacionalização (pt, en)
 - Multi-moeda (conversão EUR/USD/BRL via API)
-- Multi-tenant (múltiplas lojas)
 - RBAC avançado (gestão de permissões por grupo)
 - Integração com Telegram/WhatsApp para admins (avisos de vendas)
 - Webhooks (Stripe e outros sistemas)
-- Multi-moeda: endpoint para conversão de preços (EUR/USD/BRL)
-- Integração com Telegram/WhatsApp para avisos de admins
-- Melhorar validação de dados (ex: Zod/Yup)
+- Endpoint `/metrics` para Prometheus (monitoramento de performance)
+- Sentry para monitoramento de erros e tracing
+- Monitoramento de uptime e alertas para admins
 
 ---
 
@@ -139,15 +134,15 @@ API completa para uma loja online, com autenticação JWT, 2FA, Stripe, gestão 
 | POST   | /auth/2fa/disable                        | Desativar 2FA                                  | JWT                | `curl -X POST http://localhost:3000/auth/2fa/disable -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"token":"123456"}'`                                                                         |
 | GET    | /auth/me                                 | Perfil do utilizador autenticado               | JWT                | `curl http://localhost:3000/auth/me -H "Authorization: Bearer <TOKEN>"`                                                                                                                                                      |
 | POST   | /auth/change-email                       | Alterar email do utilizador                    | JWT                | `curl -X POST http://localhost:3000/auth/change-email -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"newEmail":"novo@email.com"}'`                                                             |
-| GET    | /api/products                            | Listar produtos                                | -                  | `curl http://localhost:3000/api/products`                                                                                                                                                                                    |
-| GET    | /api/products/popular                    | Listar produtos populares                      | -                  | `curl http://localhost:3000/api/products/popular`                                                                                                                                                                            |
-| POST   | /api/products                            | Criar produto                                  | JWT + ADMIN        | `curl -X POST http://localhost:3000/api/products -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"name":"Produto","description":"Desc","price":10,"stock":5,"categoryId":"<ID>"}'`               |
-| PUT    | /api/products/:id                        | Atualizar produto                              | JWT + ADMIN        | `curl -X PUT http://localhost:3000/api/products/<ID> -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"name":"Novo Nome","description":"Nova Desc","price":12,"stock":10,"categoryId":"<ID>"}'`   |
-| DELETE | /api/products/:id                        | Apagar produto                                 | JWT + ADMIN        | `curl -X DELETE http://localhost:3000/api/products/<ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                  |
-| GET    | /api/categories                          | Listar categorias                              | -                  | `curl http://localhost:3000/api/categories`                                                                                                                                                                                  |
-| POST   | /api/categories                          | Criar categoria                                | JWT + ADMIN        | `curl -X POST http://localhost:3000/api/categories -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"name":"Nova Categoria"}'`                                                                    |
-| PUT    | /api/categories/:id                      | Atualizar categoria                            | JWT + ADMIN        | `curl -X PUT http://localhost:3000/api/categories/<ID> -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"name":"Categoria Atualizada"}'`                                                          |
-| DELETE | /api/categories/:id                      | Apagar categoria                               | JWT + ADMIN        | `curl -X DELETE http://localhost:3000/api/categories/<ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                |
+| GET    | /products                                | Listar produtos                                | -                  | `curl http://localhost:3000/products`                                                                                                                                                                                        |
+| GET    | /products/popular                        | Listar produtos populares                      | -                  | `curl http://localhost:3000/products/popular`                                                                                                                                                                                |
+| POST   | /products                                | Criar produto                                  | JWT + ADMIN        | `curl -X POST http://localhost:3000/products -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"name":"Produto","description":"Desc","price":10,"stock":5,"categoryId":"<ID>"}'`                   |
+| PUT    | /products/:id                            | Atualizar produto                              | JWT + ADMIN        | `curl -X PUT http://localhost:3000/products/<ID> -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"name":"Novo Nome","description":"Nova Desc","price":12,"stock":10,"categoryId":"<ID>"}'`         |
+| DELETE | /products/:id                            | Apagar produto                                 | JWT + ADMIN        | `curl -X DELETE http://localhost:3000/products/<ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                      |
+| GET    | /categories                              | Listar categorias                              | -                  | `curl http://localhost:3000/categories`                                                                                                                                                                                      |
+| POST   | /categories                              | Criar categoria                                | JWT + ADMIN        | `curl -X POST http://localhost:3000/categories -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"name":"Nova Categoria"}'`                                                                        |
+| PUT    | /categories/:id                          | Atualizar categoria                            | JWT + ADMIN        | `curl -X PUT http://localhost:3000/categories/<ID> -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"name":"Categoria Atualizada"}'`                                                              |
+| DELETE | /categories/:id                          | Apagar categoria                               | JWT + ADMIN        | `curl -X DELETE http://localhost:3000/categories/<ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                    |
 | GET    | /cart                                    | Ver carrinho                                   | JWT                | `curl http://localhost:3000/cart -H "Authorization: Bearer <TOKEN>"`                                                                                                                                                         |
 | POST   | /cart                                    | Adicionar ao carrinho                          | JWT                | `curl -X POST http://localhost:3000/cart -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"productId":"<ID>","quantity":1}'`                                                                      |
 | PUT    | /cart/:id                                | Atualizar item do carrinho                     | JWT                | `curl -X PUT http://localhost:3000/cart/<ID> -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"quantity":2}'`                                                                                     |
@@ -157,25 +152,16 @@ API completa para uma loja online, com autenticação JWT, 2FA, Stripe, gestão 
 | POST   | /wishlist                                | Adicionar à wishlist                           | JWT                | `curl -X POST http://localhost:3000/wishlist -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"productId":"<ID>"}'`                                                                               |
 | DELETE | /wishlist/:productId                     | Remover da wishlist                            | JWT                | `curl -X DELETE http://localhost:3000/wishlist/<ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                      |
 | POST   | /wishlist/move-to-cart                   | Mover da wishlist para o carrinho              | JWT                | `curl -X POST http://localhost:3000/wishlist/move-to-cart -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"productId":"<ID>"}'`                                                                  |
-| GET    | /review/:productId                       | Reviews de produto                             | -                  | `curl http://localhost:3000/review/<ID>`                                                                                                                                                                                     |
-| GET    | /review/:productId/average               | Média das avaliações do produto                | -                  | `curl http://localhost:3000/review/<ID>/average`                                                                                                                                                                             |
-| POST   | /review/:productId                       | Criar/atualizar review                         | JWT                | `curl -X POST http://localhost:3000/review/<ID> -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"rating":5,"comment":"Excelente!"}'`                                                             |
-| DELETE | /review/:productId                       | Apagar review                                  | JWT                | `curl -X DELETE http://localhost:3000/review/<ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                        |
-| GET    | /review/user/:userId                     | Reviews de um utilizador (admin)               | JWT + ADMIN        | `curl http://localhost:3000/review/user/<USER_ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                        |
-| GET    | /invoice/:id                             | Download de fatura PDF                         | JWT                | `curl -O -J http://localhost:3000/invoice/<ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                           |
-| GET    | /invoice/download-all                    | Download de todas as faturas/licenças          | JWT                | `curl -O -J http://localhost:3000/invoice/download-all -H "Authorization: Bearer <TOKEN>"`                                                                                                                                   |
+| GET    | /reviews/:productId                      | Reviews de produto                             | -                  | `curl http://localhost:3000/reviews/<ID>`                                                                                                                                                                                    |
+| GET    | /reviews/:productId/average              | Média das avaliações do produto                | -                  | `curl http://localhost:3000/reviews/<ID>/average`                                                                                                                                                                            |
+| POST   | /reviews/:productId                      | Criar/atualizar review                         | JWT                | `curl -X POST http://localhost:3000/reviews/<ID> -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"rating":5,"comment":"Excelente!"}'`                                                            |
+| DELETE | /reviews/:productId                      | Apagar review                                  | JWT                | `curl -X DELETE http://localhost:3000/reviews/<ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                       |
+| GET    | /reviews/user/:userId                    | Reviews de um utilizador (admin)               | JWT + ADMIN        | `curl http://localhost:3000/reviews/user/<USER_ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                       |
+| GET    | /invoices/:id                            | Download de fatura PDF                         | JWT                | `curl -O -J http://localhost:3000/invoices/<ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                          |
+| GET    | /invoices/download/all                   | Download de todas as faturas/licenças          | JWT                | `curl -O -J http://localhost:3000/invoices/download/all -H "Authorization: Bearer <TOKEN>"`                                                                                                                                  |
 | GET    | /license                                 | Listar licenças do utilizador                  | JWT                | `curl http://localhost:3000/license -H "Authorization: Bearer <TOKEN>"`                                                                                                                                                      |
 | POST   | /license/renew                           | Renovar licença                                | JWT                | `curl -X POST http://localhost:3000/license/renew -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"licenseKey":"<KEY>"}'`                                                                        |
 | POST   | /license/revoke                          | Revogar licença                                | JWT + ADMIN        | `curl -X POST http://localhost:3000/license/revoke -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"licenseKey":"<KEY>"}'`                                                                       |
-| GET    | /license/download                        | Download do software (por licença)             | JWT                | `curl "http://localhost:3000/license/download?productId=<ID>&licenseKey=<KEY>" -H "Authorization: Bearer <TOKEN>" -O`                                                                                                        |
-| POST   | /coupon                                  | Criar cupão                                    | JWT + ADMIN        | `curl -X POST http://localhost:3000/coupon -H "Authorization: Bearer <TOKEN>" -H "Content-Type: application/json" -d '{"code":"DESCONTO10","amount":10,"discountType":"percent"}'`                                           |
-| GET    | /coupon/:code                            | Obter cupão pelo código                        | JWT                | `curl http://localhost:3000/coupon/<CODE> -H "Authorization: Bearer <TOKEN>"`                                                                                                                                                |
-| GET    | /admin                                   | Área administrativa                            | JWT + ADMIN        | `curl http://localhost:3000/admin -H "Authorization: Bearer <TOKEN>"`                                                                                                                                                        |
-| GET    | /admin/stats                             | Estatísticas administrativas                   | JWT + ADMIN        | `curl http://localhost:3000/admin/stats -H "Authorization: Bearer <TOKEN>"`                                                                                                                                                  |
-| GET    | /admin/audit-logs                        | Logs de auditoria                              | JWT + ADMIN        | `curl http://localhost:3000/admin/audit-logs -H "Authorization: Bearer <TOKEN>"`                                                                                                                                             |
-| GET    | /admin/audit-logs/user/:userId           | Logs de auditoria de um utilizador (admin)     | JWT + ADMIN        | `curl http://localhost:3000/admin/audit-logs/user/<USER_ID> -H "Authorization: Bearer <TOKEN>"`                                                                                                                              |
-| GET    | /admin/users                             | Listar utilizadores (admin)                    | JWT + ADMIN        | `curl http://localhost:3000/admin/users -H "Authorization: Bearer <TOKEN>"`                                                                                                                                                  |
-| POST   | /upload                                  | Upload de comprovativo                         | JWT                | `curl -X POST http://localhost:3000/upload -H "Authorization: Bearer <TOKEN>" -F "file=@/caminho/ficheiro.pdf"`                                                                                                              |
 | GET    | /user/export                             | Exportar dados do utilizador (GDPR)            | JWT                | `curl http://localhost:3000/user/export -H "Authorization: Bearer <TOKEN>" -O`                                                                                                                                               |
 | GET    | /currency/convert                        | Converter moeda (EUR/USD/BRL)                  | -                  | `curl "http://localhost:3000/currency/convert?amount=10&from=EUR&to=USD"`                                                                                                                                                    |
 | POST   | /webhook/stripe                          | Webhook Stripe                                 | -                  | _Usado pelo Stripe, não chamado manualmente_                                                                                                                                                                                 |
@@ -188,17 +174,17 @@ API completa para uma loja online, com autenticação JWT, 2FA, Stripe, gestão 
 - **2FA (Autenticação de Dois Fatores)**: Opcional para utilizadores/admins.
 - **Rate Limiting**: Limita tentativas de login para evitar brute force.
 - **Hash de Senhas**: Senhas armazenadas com bcrypt.
-- **Validação de Dados**: (Sugestão: usar Zod/Yup para validação robusta de inputs).
+- **Validação de Dados**: Zod para validação robusta de inputs.
 - **Proteção de Rotas**: Middlewares para autenticação e autorização por role.
 - **Revogação de Tokens**: Refresh tokens podem ser revogados a qualquer momento.
 - **Proteção de Webhooks**: Verificação de assinatura nos webhooks Stripe.
 - **Variáveis de Ambiente**: Segredos e chaves nunca no código fonte.
 - **Logs de Auditoria**: Todas as ações sensíveis são auditadas.
 - **Recuperação de Senha**: Reset seguro via email com tokens temporários.
-- **Uploads Seguros**: (Sugestão: validar tipo e tamanho de ficheiros enviados).
-- **CORS**: (Sugestão: configurar CORS restritivo para produção).
-- **Headers de Segurança**: (Sugestão: usar helmet para adicionar headers HTTP seguros).
-- **Atualizações de Dependências**: (Sugestão: manter dependências sempre atualizadas para evitar vulnerabilidades conhecidas).
+- **Uploads Seguros**: Validação de tipo e tamanho de ficheiros enviados.
+- **CORS**: Configurado para produção.
+- **Headers de Segurança**: Helmet para adicionar headers HTTP seguros.
+- **Atualizações de Dependências**: Manter dependências sempre atualizadas para evitar vulnerabilidades conhecidas.
 
 ---
 
@@ -227,68 +213,29 @@ npm run dev
 
 ---
 
-## ✅ Checklist de Funcionalidades/Endpoints a Implementar ou Melhorar
-
-- [ ] Implementar paginação e filtros avançados nas listagens de produtos e categorias
-- [x] Adicionar cache (ex: Redis) para produtos populares e endpoints de leitura intensiva
-- [x] Implementar upload seguro (validação de tipo/tamanho de ficheiros)
-- [x] Adicionar CORS restritivo para produção
-- [x] Adicionar headers de segurança (helmet)
-- [x] Validar dados de entrada com Zod/Yup em todos os endpoints
-- [x] Melhorar documentação Swagger/OpenAPI (exemplos de request/response, schemas detalhados)
-- [x] Implementar sistema de notificações para admins (Telegram/WhatsApp) em eventos críticos (ex: nova venda, erro 500)
-- [ ] Implementar multi-tenant (suporte a múltiplas lojas)
-- [ ] Adicionar endpoint para simulação de devoluções/reembolsos
-- [ ] Implementar exportação de dados do utilizador (GDPR) em formatos alternativos (ex: CSV)
-- [ ] Adicionar logs de auditoria mais detalhados (ex: alterações de permissões, ações administrativas)
-- [ ] Melhorar RBAC: gestão de permissões dinâmicas por grupo e utilizador
-- [ ] Adicionar endpoint para estatísticas de vendas/admin dashboard
-- [ ] Implementar sistema de notificações por email para eventos importantes (ex: renovação de licença, expiração)
-- [ ] Adicionar suporte a multi-moeda em mais endpoints (ex: preços dinâmicos por moeda)
-- [ ] Implementar integração com outros métodos de pagamento além do Stripe
-- [x] Melhorar internacionalização: garantir todas as mensagens traduzidas (pt/en)
-- [ ] Adicionar testes de performance para endpoints críticos
-- [ ] Automatizar deploy com CI/CD (ex: GitHub Actions)
-- [x] Adicionar exemplos de uso da API no README (curl, httpie, etc)
-- [ ] Revisar e otimizar queries Prisma para performance
-- [ ] Garantir que todas as rotas sensíveis exigem 2FA quando configurado
-- [ ] Adicionar endpoint para gestão de permissões e grupos via API (admin)
-- [ ] Implementar sistema de rate limiting customizado por endpoint
-- [ ] Adicionar monitoramento de uptime e alertas para admins
-
----
-
-## 🔐 Como proteger ações sensíveis com 2FA
-
-### Adicionar 2FA numa ação específica
-
-Para exigir autenticação de dois fatores (2FA) numa rota sensível (ex: alteração de password), basta adicionar o middleware `require2FA`:
-
-```typescript
-import { authenticate } from '../middlewares/authenticate';
-import { require2FA } from '../middlewares/require2fa.middleware';
-import { changePassword } from '../controllers/user.controller';
-
-router.post('/user/change-password', authenticate, require2FA, changePassword);
-```
-
----
-
-## 🗂️ Avisar Admins - Telegram
-```typescript
-import { sendTelegramMessage } from './telegram.service';
+## 🚧 Checklist de Funcionalidades/Endpoints a Implementar ou Melhorar
 
 ...
 
-await sendTelegramMessage(`string`);
+---
 
-```
+## 📊 Monitoramento e Performance
+
+### Prometheus
+
+- Endpoint `/metrics` disponível para métricas de performance (latência, uso de memória, CPU, etc).
+- Basta apontar o Prometheus para `http://teuservidor:3000/metrics`.
+
+### Alertas para Admins
+
+- Notificações automáticas via Telegram para admins em eventos críticos (ex: nova venda, erro 500).
+- (Opcional) Integração com WhatsApp ou email para alertas adicionais.
 
 ---
 
 ## 🛡️ Exemplos de gestão de permissões (Prisma)
 
-## Criar uma permissão
+### Criar uma permissão
 
 ```typescript
 await prisma.permission.create({
@@ -337,7 +284,4 @@ const userSchema = z.object({
 });
 
 const result = userSchema.safeParse({ email: 'email@email.com', password: 'password' });
-if (!result.success) {
-  
-  console.log(result.error.errors);
-}
+```
