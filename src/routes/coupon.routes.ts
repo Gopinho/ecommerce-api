@@ -23,8 +23,21 @@ const router = Router();
  *             properties:
  *               code:
  *                 type: string
- *               discountPercentage:
+ *                 example: "DESCONTO10"
+ *               amount:
  *                 type: number
+ *                 example: 10
+ *               discountType:
+ *                 type: string
+ *                 enum: [percent, fixed]
+ *                 example: "percent"
+ *               expiresAt:
+ *                 type: string
+ *                 format: date-time
+ *                 example: "2025-12-31T23:59:59Z"
+ *               usageLimit:
+ *                 type: integer
+ *                 example: 100
  *     responses:
  *       201:
  *         description: Cupom criado com sucesso
@@ -56,6 +69,8 @@ router.post('/', authMiddleware, authorizeRole('ADMIN'), createCoupon);
  *         description: Cupom encontrado com sucesso
  *       401:
  *         description: Não autenticado
+ *       404:
+ *         description: Cupom não encontrado
  */
 router.get('/:code', authMiddleware, getCouponByCode);
 

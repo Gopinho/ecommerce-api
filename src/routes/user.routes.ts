@@ -20,6 +20,15 @@ const router = Router();
  *           application/json:
  *             schema:
  *               type: object
+ *               example:
+ *                 id: "clx123"
+ *                 email: "user@email.com"
+ *                 name: "Utilizador Exemplo"
+ *                 licenses: []
+ *                 orders: []
+ *                 auditLogs: []
+ *                 reviews: []
+ *                 wishlist: []
  *       401:
  *         description: Não autenticado (token JWT obrigatório)
  */

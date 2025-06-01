@@ -99,6 +99,22 @@
     "not_found": "User not found.",
     "no_files_found": "No files found."
   },
+  "permission": {
+    "invalid_name": "Invalid permission name.",
+    "invalid_data": "Invalid permission data.",
+    "created": "Permission created successfully.",
+    "not_found": "Permission not found."
+  },
+  "group": {
+    "created": "Group created successfully.",
+    "not_found": "Group not found."
+  },
+  "admin": {
+    "invalid_query": "Invalid query parameters."
+  },
+  "webhook": {
+    "processing_error": "Error processing webhook."
+  },
   "common": {
     "internal_error": "Internal server error.",
     "unauthorized": "Unauthorized access.",

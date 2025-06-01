@@ -4,6 +4,8 @@ import { swaggerSpec } from './lib/swagger';
 import { errorHandler } from './middlewares/errorHandler';
 import i18n from 'i18n';
 import path from 'path';
+import helmet from 'helmet';
+import cors from './config/cors';
 
 dotenv.config();
 
@@ -25,8 +27,12 @@ import licenseRoutes from './routes/license.routes';
 import uploadRoutes from './routes/upload.routes';
 import userRoutes from './routes/user.routes';
 import currencyRoutes from './routes/currency.routes';
+import permissionRoutes from './routes/permission.routes';
 
 const app = express();
+app.use(helmet());
+app.use(cors);
+
 i18n.configure({
   locales: ['pt', 'en'],
   directory: path.join(__dirname, 'locales'),
@@ -40,8 +46,8 @@ app.use(express.json());
 
 app.use('/auth', authRoutes);
 app.use('/cart', cartRoutes);
-app.use('/api/products', productRoutes); 
-app.use('/api/categories', categoryRoutes);
+app.use('/products', productRoutes); 
+app.use('/categories', categoryRoutes);
 app.use('/admin', adminRoutes);
 app.use('/webhook', webhookRoutes);
 app.use('/checkout', checkoutRoutes);
@@ -55,6 +61,7 @@ app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/upload', uploadRoutes);
 app.use('/user', userRoutes);
 app.use('/currency', currencyRoutes);
+app.use('/api', permissionRoutes);
 
 app.get('/', (_req, res) => {
   res.send('Servidor Express está a funcionar!');

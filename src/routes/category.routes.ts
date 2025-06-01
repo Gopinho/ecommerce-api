@@ -7,7 +7,7 @@ const router = Router();
 
 /**
  * @openapi
- * /api/categories:
+ * /categories:
  *   post:
  *     summary: Criar nova categoria
  *     tags:
@@ -23,6 +23,7 @@ const router = Router();
  *             properties:
  *               name:
  *                 type: string
+ *                 example: "Eletrónica"
  *     responses:
  *       201:
  *         description: Categoria criada
@@ -35,7 +36,45 @@ router.post('/', authenticate, authorizeRole('ADMIN'), createCategory);
 
 /**
  * @openapi
- * /api/categories/{id}:
+ * /categories/{id}:
+ *   put:
+ *     summary: Atualizar categoria
+ *     tags:
+ *       - Categories
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID da categoria
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "Livros"
+ *     responses:
+ *       200:
+ *         description: Categoria atualizada
+ *       401:
+ *         description: Não autenticado
+ *       403:
+ *         description: Sem permissão
+ *       404:
+ *         description: Categoria não encontrada
+ */
+router.put('/:id', authenticate, authorizeRole('ADMIN'), updateCategory);
+
+/**
+ * @openapi
+ * /categories/{id}:
  *   delete:
  *     summary: Apagar categoria
  *     tags:
@@ -63,44 +102,7 @@ router.delete('/:id', authenticate, authorizeRole('ADMIN'), deleteCategory);
 
 /**
  * @openapi
- * /api/categories/{id}:
- *   put:
- *     summary: Atualizar categoria
- *     tags:
- *       - Categories
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         schema:
- *           type: string
- *         required: true
- *         description: ID da categoria
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *     responses:
- *       200:
- *         description: Categoria atualizada
- *       401:
- *         description: Não autenticado
- *       403:
- *         description: Sem permissão
- *       404:
- *         description: Categoria não encontrada
- */
-router.put('/:id', authenticate, authorizeRole('ADMIN'), updateCategory);
-
-/**
- * @openapi
- * /api/categories:
+ * /categories:
  *   get:
  *     summary: Listar todas as categorias
  *     tags:

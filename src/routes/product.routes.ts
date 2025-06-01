@@ -8,7 +8,7 @@ const router = Router();
 
 /**
  * @openapi
- * /api/products:
+ * /products:
  *   get:
  *     summary: Listar todos os produtos
  *     tags:
@@ -21,7 +21,7 @@ router.get('/', getAllProducts);
 
 /**
  * @openapi
- * /api/products:
+ * /products:
  *   post:
  *     summary: Criar novo produto
  *     tags:
@@ -49,7 +49,7 @@ router.post('/', authenticate, authorizeRole('ADMIN'), createProduct);
 
 /**
  * @openapi
- * /api/products/{id}:
+ * /products/{id}:
  *   put:
  *     summary: Atualizar produto por ID
  *     tags:
@@ -84,7 +84,7 @@ router.put('/:id', authenticate, authorizeRole('ADMIN'), updateProduct);
 
 /**
  * @openapi
- * /api/products/{id}:
+ * /products/{id}:
  *   delete:
  *     summary: Deletar produto por ID
  *     tags:
@@ -106,7 +106,7 @@ router.delete('/:id', authenticate, authorizeRole('ADMIN'), deleteProduct);
 
 /**
  * @openapi
- * /api/products/popular:
+ * /products/popular:
  *   get:
  *     summary: Listar produtos populares
  *     tags:
@@ -116,4 +116,5 @@ router.delete('/:id', authenticate, authorizeRole('ADMIN'), deleteProduct);
  *         description: Lista de produtos populares retornada com sucesso
  */
 router.get('/popular', popularProducts);
+
 export default router;

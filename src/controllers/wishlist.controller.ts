@@ -1,6 +1,15 @@
 import { Response, NextFunction } from 'express';
 import * as wishlistService from '../services/wishlist.service';
 import { AuthenticatedRequest } from '../middlewares/authenticate';
+import { z } from 'zod';
+
+// Schemas de validação
+const productIdBodySchema = z.object({
+  productId: z.string().min(1)
+});
+const productIdParamSchema = z.object({
+  productId: z.string().min(1)
+});
 
 export async function getWishlist(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
@@ -21,7 +30,11 @@ export async function addToWishlist(req: AuthenticatedRequest, res: Response, ne
       throw { message: 'common.unauthorized', status: 401 };
     }
     const userId = req.user.id;
-    const { productId } = req.body;
+    const parsed = productIdBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      return next({ message: 'wishlist.invalid_product', status: 400, details: parsed.error.errors });
+    }
+    const { productId } = parsed.data;
     const result = await wishlistService.addToWishlist(userId, productId);
     res.json(result);
   } catch (err) {
@@ -35,7 +48,11 @@ export async function removeFromWishlist(req: AuthenticatedRequest, res: Respons
       throw { message: 'common.unauthorized', status: 401 };
     }
     const userId = req.user.id;
-    const { productId } = req.params;
+    const parsed = productIdParamSchema.safeParse(req.params);
+    if (!parsed.success) {
+      return next({ message: 'wishlist.invalid_product', status: 400, details: parsed.error.errors });
+    }
+    const { productId } = parsed.data;
     const result = await wishlistService.removeFromWishlist(userId, productId);
     res.json(result);
   } catch (err) {
@@ -48,10 +65,12 @@ export async function moveWishlistItemToCart(req: AuthenticatedRequest, res: Res
     if (!req.user) {
       throw { message: 'common.unauthorized', status: 401 };
     }
-
     const userId = req.user.id;
-    const { productId } = req.body;
-
+    const parsed = productIdBodySchema.safeParse(req.body);
+    if (!parsed.success) {
+      return next({ message: 'wishlist.invalid_product', status: 400, details: parsed.error.errors });
+    }
+    const { productId } = parsed.data;
     const result = await wishlistService.moveToCart(userId, productId);
     res.json(result);
   } catch (err) {

@@ -4,14 +4,20 @@ import { logAction } from '../services/audit.service';
 import { AuthenticatedRequest } from '../middlewares/authenticate';
 import { getPopularProducts } from '../services/product.service';
 import { z } from 'zod';
+import redis, { connectRedis } from '../lib/redis';
 
-// Schema de validação para produto
+// Schema de validação para produto (body)
 const productSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
   price: z.number().positive(),
   stock: z.number().int().nonnegative(),
   categoryId: z.string().min(1)
+});
+
+// Schema para validação de params (id)
+const idParamSchema = z.object({
+  id: z.string().min(1)
 });
 
 export async function createProduct(req: Request, res: Response, next: NextFunction) {
@@ -34,6 +40,7 @@ export async function createProduct(req: Request, res: Response, next: NextFunct
 
 export async function getAllProducts(req: Request, res: Response, next: NextFunction) {
   try {
+    // Aqui poderias validar query params se necessário (ex: paginação)
     const products = await prisma.product.findMany({
       orderBy: { createdAt: 'desc' },
     });
@@ -45,7 +52,11 @@ export async function getAllProducts(req: Request, res: Response, next: NextFunc
 
 export async function getProductById(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
+    const parsed = idParamSchema.safeParse(req.params);
+    if (!parsed.success) {
+      return next({ message: 'product.invalid_id', status: 400, details: parsed.error.errors });
+    }
+    const { id } = parsed.data;
 
     const product = await prisma.product.findUnique({ where: { id } });
 
@@ -59,18 +70,22 @@ export async function getProductById(req: Request, res: Response, next: NextFunc
 
 export async function updateProduct(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
-    const userId = req.user?.id;
+    const parsedParams = idParamSchema.safeParse(req.params);
+    if (!parsedParams.success) {
+      return next({ message: 'product.invalid_id', status: 400, details: parsedParams.error.errors });
+    }
+    const { id } = parsedParams.data;
 
+    const userId = req.user?.id;
     if (!userId) {
       throw { message: 'common.unauthorized', status: 401 };
     }
 
-    const parsed = productSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return next({ message: 'product.invalid_data', status: 400, details: parsed.error.errors });
+    const parsedBody = productSchema.safeParse(req.body);
+    if (!parsedBody.success) {
+      return next({ message: 'product.invalid_data', status: 400, details: parsedBody.error.errors });
     }
-    const { name, description, price, stock, categoryId } = parsed.data;
+    const { name, description, price, stock, categoryId } = parsedBody.data;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) throw { message: 'product.not_found', status: 404 };
@@ -90,7 +105,11 @@ export async function updateProduct(req: AuthenticatedRequest, res: Response, ne
 
 export async function deleteProduct(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
+    const parsed = idParamSchema.safeParse(req.params);
+    if (!parsed.success) {
+      return next({ message: 'product.invalid_id', status: 400, details: parsed.error.errors });
+    }
+    const { id } = parsed.data;
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) throw { message: 'product.not_found', status: 404 };
@@ -105,9 +124,19 @@ export async function deleteProduct(req: Request, res: Response, next: NextFunct
 
 export async function popularProducts(req: Request, res: Response, next: NextFunction) {
   try {
-    const products = await getPopularProducts();
+    await connectRedis();
+    const cacheKey = 'popular_products';
+    const cached = await redis.get(cacheKey);
+
+    if (cached) {
+      return res.json(JSON.parse(cached));
+    }
+
+    const products = await getPopularProducts(); // Função já existente
+    await redis.set(cacheKey, JSON.stringify(products), { EX: 60 }); // 60 segundos de cache
+
     res.json(products);
-  } catch (err) {
+  } catch (err: any) {
     next(err);
   }
 }

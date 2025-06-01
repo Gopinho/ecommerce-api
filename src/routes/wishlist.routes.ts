@@ -46,6 +46,7 @@ router.get('/', getWishlist);
  *             properties:
  *               productId:
  *                 type: string
+ *                 example: "clx123"
  *     responses:
  *       201:
  *         description: Produto adicionado à lista de desejos com sucesso
@@ -96,6 +97,7 @@ router.delete('/:productId', removeFromWishlist);
  *             properties:
  *               productId:
  *                 type: string
+ *                 example: "clx123"
  *     responses:
  *       200:
  *         description: Item movido para o carrinho com sucesso

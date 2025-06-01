@@ -3,6 +3,25 @@ import prisma from '../prisma/client';
 import { validateLicense } from '../services/license.service';
 import path from 'path';
 import fs from 'fs';
+import { z } from 'zod';
+
+// Schemas de validação
+const renewSchema = z.object({
+  licenseKey: z.string().min(1)
+});
+
+const revokeSchema = z.object({
+  licenseKey: z.string().min(1)
+});
+
+const downloadQuerySchema = z.object({
+  productId: z.string().min(1),
+  licenseKey: z.string().min(1)
+});
+
+const simulateAutoRenewSchema = z.object({
+  licenseId: z.string().min(1)
+});
 
 export async function listUserLicenses(req: Request, res: Response, next: NextFunction) {
   try {
@@ -16,7 +35,11 @@ export async function listUserLicenses(req: Request, res: Response, next: NextFu
 
 export async function renewLicense(req: Request, res: Response, next: NextFunction) {
   try {
-    const { licenseKey } = req.body;
+    const parsed = renewSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return next({ message: 'license.invalid_key', status: 400, details: parsed.error.errors });
+    }
+    const { licenseKey } = parsed.data;
 
     // Aqui podes integrar com pagamento ou só estender data (exemplo)
     const license = await prisma.license.update({
@@ -32,7 +55,11 @@ export async function renewLicense(req: Request, res: Response, next: NextFuncti
 
 export async function revokeLicense(req: Request, res: Response, next: NextFunction) {
   try {
-    const { licenseKey } = req.body;
+    const parsed = revokeSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return next({ message: 'license.invalid_key', status: 400, details: parsed.error.errors });
+    }
+    const { licenseKey } = parsed.data;
 
     // Verifica role admin (middleware)
 
@@ -49,12 +76,13 @@ export async function revokeLicense(req: Request, res: Response, next: NextFunct
 
 export async function downloadSoftware(req: Request, res: Response, next: NextFunction) {
   try {
-    const { productId, licenseKey } = req.query;
-    if (!productId || !licenseKey) {
-      throw { message: 'license.missing_params', status: 400 };
+    const parsed = downloadQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      return next({ message: 'license.missing_params', status: 400, details: parsed.error.errors });
     }
+    const { productId, licenseKey } = parsed.data;
 
-    const license = await validateLicense(licenseKey as string);
+    const license = await validateLicense(licenseKey);
 
     if (license.productId !== productId) {
       throw { message: 'license.invalid_for_product', status: 403 };
@@ -76,7 +104,11 @@ export async function downloadSoftware(req: Request, res: Response, next: NextFu
 export async function simulateAutoRenew(req: Request, res: Response, next: NextFunction) {
   try {
     const userId = req.user.id;
-    const { licenseId } = req.body;
+    const parsed = simulateAutoRenewSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return next({ message: 'license.invalid_id', status: 400, details: parsed.error.errors });
+    }
+    const { licenseId } = parsed.data;
 
     // Busca a licença
     const license = await prisma.license.findUnique({

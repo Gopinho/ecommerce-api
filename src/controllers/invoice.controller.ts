@@ -3,11 +3,20 @@ import { generateInvoice } from '../services/invoice.service';
 import path from 'path';
 import archiver from 'archiver';
 import prisma from '../prisma/client';
-import fs from 'fs';
+import { z } from 'zod';
+
+// Validação do parâmetro id
+const idParamSchema = z.object({
+  id: z.string().min(1)
+});
 
 export async function downloadInvoice(req: Request, res: Response, next: NextFunction) {
   try {
-    const { id } = req.params;
+    const parsed = idParamSchema.safeParse(req.params);
+    if (!parsed.success) {
+      return next({ message: 'invoice.invalid_id', status: 400, details: parsed.error.errors });
+    }
+    const { id } = parsed.data;
     const filePath = await generateInvoice(id);
     const filename = path.basename(filePath);
     res.download(filePath, filename);

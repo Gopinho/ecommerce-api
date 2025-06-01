@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { stripe } from '../lib/stripe';
 import prisma from '../prisma/client';
 import Stripe from 'stripe';
+import { sendTelegramMessage } from '../services/telegram.service';
 
 export async function handleStripeWebhook(req: Request, res: Response) {
   const sig = req.headers['stripe-signature'] as string;
@@ -44,6 +45,8 @@ export async function handleStripeWebhook(req: Request, res: Response) {
           },
         },
       });
+
+      await sendTelegramMessage(`🛒 Nova venda! User: ${userId} | Total: ${total}€`);
 
       // Atualiza o stock dos produtos
       for (const item of cartItems) {

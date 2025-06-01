@@ -3,6 +3,7 @@ import * as twoFAService from '../services/2fa.service';
 import { AuthenticatedRequest } from '../middlewares/authenticate';
 import { z } from 'zod';
 
+// Validação do token de 2FA
 const tokenSchema = z.object({
   token: z.string().min(4, '2fa.token_required')
 });
@@ -26,6 +27,7 @@ export async function confirm2FA(req: AuthenticatedRequest, res: Response, next:
       throw { message: 'auth.not_authenticated', status: 401 };
     }
 
+    // Validação do body
     const parsed = tokenSchema.safeParse(req.body);
     if (!parsed.success) {
       return next({ message: '2fa.token_required', status: 400, details: parsed.error.errors });
@@ -51,6 +53,7 @@ export async function disable2FA(req: AuthenticatedRequest, res: Response, next:
       throw { message: 'auth.not_authenticated', status: 401 };
     }
 
+    // Validação do body
     const parsed = tokenSchema.safeParse(req.body);
     if (!parsed.success) {
       return next({ message: '2fa.token_required', status: 400, details: parsed.error.errors });

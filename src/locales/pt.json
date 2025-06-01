@@ -91,13 +91,30 @@
 		"invalid_format": "Apenas imagens ou PDF são permitidos."
 	},
 	"audit": {
-		"list_success": "Lista de logs de auditoria.",
+		"list_success": "Lista de logs de auditoria.",  
 		"not_found": "Log de auditoria não encontrado."
+	},
+	"webhook": {
+		"processing_error": "Erro ao processar o webhook.",
+		"not_found": "Webhook não encontrado."
 	},
 	"user": {
 		"data_exported": "Dados exportados com sucesso.",
 		"not_found": "Utilizador não encontrado.",
 		"no_files_found": "Nenhum ficheiro encontrado."
+	},
+	"permission": {
+		"invalid_name": "Nome de permissão inválido.",
+		"invalid_data": "Dados de permissão inválidos.",
+		"created": "Permissão criada com sucesso.",
+		"not_found": "Permissão não encontrada."
+	},
+	"group": {
+		"created": "Grupo criado com sucesso.",
+		"not_found": "Grupo não encontrado."
+	},
+	"admin": {
+		"invalid_query": "Parâmetros de consulta inválidos."
 	},
 	"common": {
 		"internal_error": "Erro interno do servidor.",
@@ -112,5 +129,12 @@
 	"validation": {
 		"error": "validation.error"
 	},
-	"Erro de teste para Telegram": "Erro de teste para Telegram"
+	"Erro de teste para Telegram": "Erro de teste para Telegram",
+	"connect ECONNREFUSED 127": {
+		"0": {
+			"0": {
+				"1": "587"
+			}
+		}
+	}
 }

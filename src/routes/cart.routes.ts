@@ -46,8 +46,10 @@ router.get('/', getCart);
  *             properties:
  *               productId:
  *                 type: string
+ *                 example: "clx123"
  *               quantity:
  *                 type: integer
+ *                 example: 2
  *     responses:
  *       201:
  *         description: Item adicionado ao carrinho com sucesso
@@ -81,6 +83,7 @@ router.post('/', addToCart);
  *             properties:
  *               quantity:
  *                 type: integer
+ *                 example: 3
  *     responses:
  *       200:
  *         description: Item atualizado com sucesso

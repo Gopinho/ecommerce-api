@@ -1,7 +1,5 @@
 import { Router } from 'express';
-//import { checkout, listOrders } from '../controllers/checkout.controller';
 import { authenticate } from '../middlewares/authenticate';
-import { authorizeRole } from '../middlewares/authorizeRole';
 import { createStripeSession } from '../controllers/checkout.controller';
 
 const router = Router();
@@ -23,22 +21,25 @@ router.use(authenticate);
  *           schema:
  *             type: object
  *             properties:
- *               items:
- *                 type: array
- *                 items:
- *                   type: object
- *                   properties:
- *                     productId:
- *                       type: string
- *                     quantity:
- *                       type: integer
+ *               couponCode:
+ *                 type: string
+ *                 example: "DESCONTO10"
  *     responses:
  *       200:
  *         description: Sessão Stripe criada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 url:
+ *                   type: string
+ *                   example: "https://checkout.stripe.com/pay/cs_test_..."
+ *       400:
+ *         description: Dados inválidos ou carrinho vazio
  *       401:
  *         description: Não autenticado
  */
 router.post('/stripe', createStripeSession);
-//router.get('/orders', authenticate, authorizeRole('ADMIN'), listOrders);
 
 export default router;

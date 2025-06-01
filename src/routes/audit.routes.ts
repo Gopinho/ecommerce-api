@@ -22,8 +22,7 @@ const router = Router();
  *       403:
  *         description: Acesso negado
  */
-router.use(authenticate, authorizeRole('ADMIN'));
-router.get('/', getAuditLogs);
+router.get('/', authenticate, authorizeRole('ADMIN'), getAuditLogs);
 
 /**
  * @openapi
@@ -67,4 +66,5 @@ router.get('/user', authenticate, userAuditLogs);
  *         description: Sem permissão (apenas admin)
  */
 router.get('/user/:userId', authenticate, authorizeRole('ADMIN'), userAuditLogsByAdmin);
+
 export default router;

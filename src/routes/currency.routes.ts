@@ -32,6 +32,23 @@ const router = Router();
  *     responses:
  *       200:
  *         description: Valor convertido e taxa de câmbio
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 converted:
+ *                   type: number
+ *                   example: 10.75
+ *                 rate:
+ *                   type: number
+ *                   example: 1.075
+ *                 from:
+ *                   type: string
+ *                   example: "EUR"
+ *                 to:
+ *                   type: string
+ *                   example: "USD"
  *       400:
  *         description: Parâmetros em falta ou inválidos
  */

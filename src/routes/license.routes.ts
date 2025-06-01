@@ -24,36 +24,56 @@ router.get('/', authenticate, listUserLicenses);
 /**
  * @openapi
  * /license/renew:
- *   get:
+ *   post:
  *     summary: Renovar licença
  *     tags:
  *       - Licenses
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               licenseKey:
+ *                 type: string
+ *                 example: "LIC-123456"
  *     responses:
  *       200:
  *         description: Licença renovada com sucesso
  *       401:
  *         description: Não autenticado
  */
-router.get('/renew', authenticate, renewLicense);
+router.post('/renew', authenticate, renewLicense);
 
 /**
  * @openapi
  * /license/revoke:
- *   get:
+ *   post:
  *     summary: Revogar licença
  *     tags:
  *       - Licenses
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               licenseKey:
+ *                 type: string
+ *                 example: "LIC-123456"
  *     responses:
  *       200:
  *         description: Licença revogada com sucesso
  *       401:
  *         description: Não autenticado
  */
-router.get('/revoke', authenticate, revokeLicense);
+router.post('/revoke', authenticate, revokeLicense);
 
 /**
  * @openapi
@@ -64,6 +84,16 @@ router.get('/revoke', authenticate, revokeLicense);
  *       - Licenses
  *     security:
  *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               licenseId:
+ *                 type: string
+ *                 example: "LIC-123456"
  *     responses:
  *       200:
  *         description: Simulação de renovação automática realizada com sucesso

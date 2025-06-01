@@ -95,8 +95,10 @@ router.get('/:productId/average', getAverage);
  *             properties:
  *               rating:
  *                 type: number
+ *                 example: 5
  *               comment:
  *                 type: string
+ *                 example: "Produto excelente!"
  *     responses:
  *       201:
  *         description: Avaliação criada ou atualizada com sucesso

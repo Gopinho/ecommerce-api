@@ -1,4 +1,4 @@
-import { redis } from '../lib/redis';
+import redis from "../lib/redis";
 import prisma from '../prisma/client';
 
 const POPULAR_PRODUCTS_KEY = 'popular_products';
@@ -20,4 +20,10 @@ export async function getPopularProducts() {
   await redis.set(POPULAR_PRODUCTS_KEY, JSON.stringify(products), { EX: 3600 });
 
   return products;
+}
+
+export async function getProductById(id: string) {
+  const product = await prisma.product.findUnique({ where: { id } });
+  if (!product) throw new Error('product.not_found');
+  return product;
 }
