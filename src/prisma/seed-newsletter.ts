@@ -212,7 +212,7 @@ async function seedNewsletterTemplates() {
                 data: {
                     email: 'admin@loja.com',
                     password: '$2b$10$placeholder', // In real app, this should be properly hashed
-                    name: 'Administrador',
+                    firstName: 'Admin', lastName: 'Sistema',
                     role: 'ADMIN'
                 }
             });

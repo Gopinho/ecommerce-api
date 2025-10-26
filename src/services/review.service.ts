@@ -20,7 +20,7 @@ export async function createOrUpdateReview(userId: string, productId: string, ra
 export async function getReviews(productId: string) {
   return await prisma.review.findMany({
     where: { productId },
-    include: { user: { select: { name: true } } },
+    include: { user: { select: { firstName: true, lastName: true } } },
     orderBy: { createdAt: 'desc' },
   });
 }

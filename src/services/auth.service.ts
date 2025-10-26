@@ -10,7 +10,7 @@ import { sendTelegramMessage } from './telegram.service';
 
 const REFRESH_TOKEN_LIFETIME = 60 * 60 * 24 * 7; // 7 dias em segundos
 
-export async function register(email: string, password: string, name: string) {
+export async function register(email: string, password: string, firstName: string, lastName: string) {
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
         const error = new Error('auth.email_in_use') as any;
@@ -20,7 +20,13 @@ export async function register(email: string, password: string, name: string) {
 
     const hashed = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-        data: { email, password: hashed, name },
+        data: {
+            email,
+            password: hashed,
+            firstName,
+            lastName,
+            position: 'Cliente' // valor padrão
+        },
     });
 
     // Tentar enviar email de boas-vindas (não crítico)
@@ -28,13 +34,13 @@ export async function register(email: string, password: string, name: string) {
         await sendEmail(
             email,
             'Bem-vindo à Minha Loja!',
-            `<h1>Olá, ${name}!</h1><p>Obrigado por registar na nossa loja.</p>`
+            `<h1>Olá, ${firstName} ${lastName}!</h1><p>Obrigado por registar na nossa loja.</p>`
         );
     } catch (error) {
         console.warn('⚠️ Falha ao enviar email de boas-vindas:', error);
     }
 
-    return { id: user.id, email: user.email };
+    return { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName };
 }
 
 export async function login(email: string, password: string, token2FA?: string) {
@@ -76,7 +82,7 @@ export async function login(email: string, password: string, token2FA?: string) 
 
     const accessToken = signAccessToken({ id: user.id, role: user.role });
     const refreshToken = await generateRefreshToken(user.id);
-    await sendTelegramMessage(`${user.name} Logged In!`);
+    await sendTelegramMessage(`${`${user.firstName} ${user.lastName}`} Logged In!`);
 
     return { accessToken, refreshToken };
 }

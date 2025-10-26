@@ -117,7 +117,7 @@ export async function createSupplierOrder(data: CreateSupplierOrderData, created
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true, lastName: true,
                     email: true
                 }
             }
@@ -163,7 +163,7 @@ export async function getAllSupplierOrders(
                 createdBy: {
                     select: {
                         id: true,
-                        name: true
+                        firstName: true, lastName: true
                     }
                 },
                 _count: {
@@ -207,7 +207,7 @@ export async function getSupplierOrderById(id: string) {
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true, lastName: true,
                     email: true
                 }
             }
@@ -243,7 +243,7 @@ export async function updateSupplierOrder(id: string, data: UpdateSupplierOrderD
             createdBy: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true, lastName: true,
                     email: true
                 }
             }

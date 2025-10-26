@@ -234,7 +234,7 @@ export async function getRecentOrders(): Promise<RecentOrder[]> {
         include: {
             user: {
                 select: {
-                    name: true,
+                    firstName: true, lastName: true,
                     email: true
                 }
             }
@@ -244,7 +244,7 @@ export async function getRecentOrders(): Promise<RecentOrder[]> {
     return orders.map(order => ({
         id: order.id,
         orderNumber: `ORD-${order.id.slice(-8).toUpperCase()}`,
-        customerName: order.user.name,
+        customerName: `${order.user.firstName} ${order.user.lastName}`,
         customerEmail: order.user.email,
         total: Number(order.total),
         status: order.status,
@@ -310,7 +310,7 @@ export async function getAllOrders(page = 1, limit = 10, status?: string) {
             include: {
                 user: {
                     select: {
-                        name: true,
+                        firstName: true, lastName: true,
                         email: true
                     }
                 },
@@ -318,7 +318,8 @@ export async function getAllOrders(page = 1, limit = 10, status?: string) {
                     include: {
                         product: {
                             select: {
-                                name: true
+                                name: true,
+                                price: true
                             }
                         }
                     }
@@ -335,7 +336,7 @@ export async function getAllOrders(page = 1, limit = 10, status?: string) {
         orders: orders.map(order => ({
             id: order.id,
             orderNumber: `ORD-${order.id.slice(-8).toUpperCase()}`,
-            customerName: order.user.name,
+            customerName: `${order.user.firstName} ${order.user.lastName}`,
             customerEmail: order.user.email,
             total: Number(order.total),
             status: order.status,
@@ -367,7 +368,8 @@ export async function getAllUsersDetailed(page = 1, limit = 10, role?: string) {
             take: limit,
             select: {
                 id: true,
-                name: true,
+                firstName: true,
+                lastName: true,
                 email: true,
                 role: true,
                 createdAt: true,
@@ -390,7 +392,7 @@ export async function getAllUsersDetailed(page = 1, limit = 10, role?: string) {
 
     return {
         users: users.map(user => {
-            const [firstName, ...lastNameParts] = user.name.split(' ');
+            const [firstName, ...lastNameParts] = `${user.firstName} ${user.lastName}`.split(' ');
             return {
                 id: user.id,
                 firstName,

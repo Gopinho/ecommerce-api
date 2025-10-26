@@ -24,6 +24,12 @@ export async function handleStripeWebhook(req: Request, res: Response) {
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object as Stripe.Checkout.Session;
             const userId = session.metadata?.userId;
+            const shippingAddressId = session.metadata?.shippingAddressId;
+
+            if (!shippingAddressId) {
+                console.error('⚠️ Webhook: shippingAddressId em falta nos metadados');
+                return res.status(400).json({ error: 'shippingAddressId em falta' });
+            }
 
             const cartItems = await prisma.cartItem.findMany({
                 where: { userId },
@@ -34,11 +40,12 @@ export async function handleStripeWebhook(req: Request, res: Response) {
                 return sum + multiplyDecimals(item.product.price, item.quantity);
             }, 0);
 
-            // Cria o pedido (Order)
+            // Cria o pedido (Order) com endereço de envio
             await prisma.order.create({
                 data: {
                     userId: userId!,
                     total,
+                    shippingAddressId: shippingAddressId,
                     items: {
                         create: cartItems.map((item) => ({
                             productId: item.productId,

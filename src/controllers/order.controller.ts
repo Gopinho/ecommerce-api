@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import * as orderService from '../services/order.service';
 import { OrderStatus } from '@prisma/client';
 import { sendOrderNotification, sendTelegramMessage } from '../services/telegram.service';
+import prisma from '../prisma/client';
 
 interface AuthenticatedRequest extends Request {
     user?: {
@@ -14,33 +15,52 @@ interface AuthenticatedRequest extends Request {
 
 export async function createOrder(req: AuthenticatedRequest, res: Response) {
     try {
-        const { items, couponId, shippingAddress, paymentMethod } = req.body;
+        const { items, couponId, shippingAddressId } = req.body;
         const userId = req.user!.id;
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ error: 'Items são obrigatórios' });
         }
 
+        if (!shippingAddressId) {
+            return res.status(400).json({ error: 'Endereço de envio é obrigatório' });
+        }
+
+        // Verificar se o endereço pertence ao utilizador
+        const address = await prisma.userAddress.findFirst({
+            where: {
+                id: shippingAddressId,
+                userId: userId
+            }
+        });
+
+        if (!address) {
+            return res.status(400).json({ error: 'Endereço de envio inválido' });
+        }
+
         const order = await orderService.createOrder({
             userId,
+            shippingAddressId,
             items,
             couponId
         });
 
         // Enviar notificação detalhada da encomenda via Telegram
         try {
+            // Get user details for notification
+            const user = await prisma.user.findUnique({
+                where: { id: userId },
+                select: { email: true }
+            });
+
             await sendOrderNotification({
                 orderId: order.id,
                 userId: order.userId,
-                userEmail: order.user.email,
+                userEmail: user?.email || "N/A",
                 total: parseFloat(order.total.toString()),
-                items: order.items.map(item => ({
-                    productName: item.product?.name || 'Produto desconhecido',
-                    quantity: item.quantity,
-                    price: parseFloat(item.price.toString())
-                })),
-                paymentMethod: paymentMethod,
-                shippingAddress: shippingAddress
+                items: [], // Items will be fetched within the notification service
+                paymentMethod: 'Stripe',
+                shippingAddress: `Address ID: ${shippingAddressId}`
             });
         } catch (telegramError) {
             console.error('Failed to send order notification:', telegramError);

@@ -8,7 +8,8 @@ import { z } from 'zod';
 
 // Validação do corpo do pedido
 const checkoutSchema = z.object({
-    couponCode: z.string().optional()
+    couponCode: z.string().optional(),
+    shippingAddressId: z.string().min(1, 'Endereço de envio é obrigatório')
 });
 
 export async function createStripeSession(req: AuthenticatedRequest, res: Response, next: NextFunction) {
@@ -22,7 +23,19 @@ export async function createStripeSession(req: AuthenticatedRequest, res: Respon
         if (!parsed.success) {
             return next({ message: 'checkout.invalid_data', status: 400, details: parsed.error.errors });
         }
-        const { couponCode } = parsed.data;
+        const { couponCode, shippingAddressId } = parsed.data;
+
+        // Verificar se o endereço de envio existe e pertence ao utilizador
+        const shippingAddress = await prisma.userAddress.findFirst({
+            where: {
+                id: shippingAddressId,
+                userId: userId
+            }
+        });
+
+        if (!shippingAddress) {
+            throw { message: 'checkout.invalid_address', status: 400 };
+        }
 
         const cartItems = await prisma.cartItem.findMany({
             where: { userId },
@@ -49,7 +62,9 @@ export async function createStripeSession(req: AuthenticatedRequest, res: Respon
             }
             orderTotal -= discount;
             await incrementUsage(coupon.code);
-        } const session = await stripe.checkout.sessions.create({
+        }
+
+        const session = await stripe.checkout.sessions.create({
             mode: 'payment',
             line_items: cartItems.map((item) => ({
                 quantity: item.quantity,
@@ -70,6 +85,7 @@ export async function createStripeSession(req: AuthenticatedRequest, res: Respon
                 couponCode: couponCode || '',
                 discount: discount.toString(),
                 orderTotal: orderTotal.toString(),
+                shippingAddressId: shippingAddressId,
             },
         });
 

@@ -4,6 +4,7 @@ import { decimalToNumber } from '../utils/decimal';
 
 export interface CreateOrderData {
     userId: string;
+    shippingAddressId: string;
     items: {
         productId: string;
         variantId?: string;
@@ -14,7 +15,7 @@ export interface CreateOrderData {
 }
 
 export async function createOrder(data: CreateOrderData) {
-    const { userId, items, couponId } = data;
+    const { userId, shippingAddressId, items, couponId } = data;
 
     // Calcular total
     let total = items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -39,6 +40,7 @@ export async function createOrder(data: CreateOrderData) {
     const order = await prisma.order.create({
         data: {
             userId,
+            shippingAddressId,
             total,
             couponId,
             status: OrderStatus.PENDING,
@@ -61,7 +63,8 @@ export async function createOrder(data: CreateOrderData) {
             user: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
                     email: true
                 }
             },
@@ -130,7 +133,8 @@ export async function getAllOrders(page = 1, limit = 10, status?: OrderStatus) {
                 user: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true,
+                        lastName: true,
                         email: true
                     }
                 },
@@ -174,7 +178,8 @@ export async function getOrderById(id: string) {
             user: {
                 select: {
                     id: true,
-                    name: true,
+                    firstName: true,
+                    lastName: true,
                     email: true
                 }
             },
@@ -249,7 +254,8 @@ export async function updateOrderStatus(id: string, status: OrderStatus) {
         include: {
             user: {
                 select: {
-                    name: true,
+                    firstName: true,
+                    lastName: true,
                     email: true
                 }
             }

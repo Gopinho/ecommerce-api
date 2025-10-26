@@ -136,7 +136,7 @@ export async function getProductById(req: Request, res: Response, next: NextFunc
                 reviews: {
                     include: {
                         user: {
-                            select: { name: true }
+                            select: { firstName: true, lastName: true }
                         }
                     },
                     orderBy: { createdAt: 'desc' }

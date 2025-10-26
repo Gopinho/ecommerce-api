@@ -30,6 +30,24 @@ const swaggerDefinition = {
                     password: { type: 'string', minLength: 8 }
                 }
             },
+            RegisterRequest: {
+                type: 'object',
+                required: ['email', 'password', 'firstName', 'lastName'],
+                properties: {
+                    email: { type: 'string', format: 'email' },
+                    password: { type: 'string', minLength: 8 },
+                    firstName: { type: 'string', minLength: 1 },
+                    lastName: { type: 'string', minLength: 1 }
+                }
+            },
+            CheckoutRequest: {
+                type: 'object',
+                required: ['shippingAddressId'],
+                properties: {
+                    couponCode: { type: 'string' },
+                    shippingAddressId: { type: 'string', description: 'ID do endereço de envio' }
+                }
+            },
             Product: {
                 type: 'object',
                 properties: {
@@ -48,6 +66,8 @@ const swaggerDefinition = {
                     user_id: { type: 'string' },
                     status: { type: 'string', enum: ['PENDING', 'PROCESSING', 'SHIPPED', 'DELIVERED', 'CANCELLED'] },
                     total: { type: 'number' },
+                    shippingAddressId: { type: 'string' },
+                    shippingAddress: { $ref: '#/components/schemas/UserAddress' },
                     created_at: { type: 'string', format: 'date-time' }
                 }
             },
@@ -56,9 +76,44 @@ const swaggerDefinition = {
                 properties: {
                     id: { type: 'string' },
                     email: { type: 'string', format: 'email' },
-                    name: { type: 'string' },
-                    role: { type: 'string', enum: ['ADMIN', 'USER'] },
+                    firstName: { type: 'string' },
+                    lastName: { type: 'string' },
+                    phone: { type: 'string', nullable: true },
+                    position: { type: 'string' },
+                    nif: { type: 'string', nullable: true },
+                    role: { type: 'string', enum: ['ADMIN', 'CLIENT'] },
                     created_at: { type: 'string', format: 'date-time' }
+                }
+            },
+            UserAddress: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    userId: { type: 'string' },
+                    addressLine1: { type: 'string' },
+                    addressLine2: { type: 'string', nullable: true },
+                    city: { type: 'string' },
+                    district: { type: 'string' },
+                    postalCode: { type: 'string' },
+                    country: { type: 'string' },
+                    isDefault: { type: 'boolean' },
+                    label: { type: 'string', nullable: true },
+                    createdAt: { type: 'string', format: 'date-time' },
+                    updatedAt: { type: 'string', format: 'date-time' }
+                }
+            },
+            AddressRequest: {
+                type: 'object',
+                required: ['addressLine1', 'city', 'district', 'postalCode', 'country'],
+                properties: {
+                    addressLine1: { type: 'string', minLength: 1 },
+                    addressLine2: { type: 'string' },
+                    city: { type: 'string', minLength: 1 },
+                    district: { type: 'string', minLength: 1 },
+                    postalCode: { type: 'string', minLength: 1 },
+                    country: { type: 'string', minLength: 1 },
+                    label: { type: 'string' },
+                    isDefault: { type: 'boolean' }
                 }
             },
             Category: {
@@ -303,21 +358,30 @@ const swaggerDefinition = {
                     required: true,
                     content: {
                         'application/json': {
-                            schema: {
-                                type: 'object',
-                                required: ['email', 'password', 'name'],
-                                properties: {
-                                    email: { type: 'string', format: 'email' },
-                                    password: { type: 'string', minLength: 8 },
-                                    name: { type: 'string' }
-                                }
-                            }
+                            schema: { $ref: '#/components/schemas/RegisterRequest' }
                         }
                     }
                 },
                 responses: {
-                    '201': { description: 'Usuário criado com sucesso' },
-                    '400': { description: 'Dados inválidos' }
+                    '201': {
+                        description: 'Usuário criado com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string' },
+                                        email: { type: 'string' },
+                                        firstName: { type: 'string' },
+                                        lastName: { type: 'string' },
+                                        message: { type: 'string' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos' },
+                    '409': { description: 'Email já em uso' }
                 }
             }
         },
@@ -966,46 +1030,167 @@ const swaggerDefinition = {
         },
 
         // === CHECKOUT EXPANDIDO ===
-        '/checkout': {
+        '/checkout/stripe': {
             post: {
-                summary: 'Processar checkout',
+                summary: 'Criar sessão de pagamento Stripe',
                 tags: ['Checkout'],
                 security: [{ bearerAuth: [] }],
                 requestBody: {
                     required: true,
                     content: {
                         'application/json': {
-                            schema: {
-                                type: 'object',
-                                properties: {
-                                    couponCode: { type: 'string' },
-                                    shippingAddress: {
-                                        type: 'object',
-                                        properties: {
-                                            street: { type: 'string' },
-                                            city: { type: 'string' },
-                                            postalCode: { type: 'string' },
-                                            country: { type: 'string' }
-                                        }
-                                    },
-                                    paymentMethod: { type: 'string', enum: ['card', 'paypal', 'bank_transfer'] }
-                                }
-                            }
+                            schema: { $ref: '#/components/schemas/CheckoutRequest' }
                         }
                     }
                 },
                 responses: {
-                    '200': { description: 'Checkout processado com sucesso' }
+                    '200': {
+                        description: 'Sessão de pagamento criada com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        url: { type: 'string', description: 'URL de redirecionamento para pagamento' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos ou carrinho vazio ou endereço inválido' },
+                    '401': { description: 'Não autenticado' }
                 }
             }
         },
-        '/checkout/session': {
-            post: {
-                summary: 'Criar sessão de pagamento Stripe',
-                tags: ['Checkout'],
+
+        // === ENDEREÇOS ===
+        '/addresses': {
+            get: {
+                summary: 'Listar endereços do utilizador',
+                tags: ['Addresses'],
                 security: [{ bearerAuth: [] }],
                 responses: {
-                    '200': { description: 'Sessão criada com sucesso' }
+                    '200': {
+                        description: 'Lista de endereços obtida com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: { $ref: '#/components/schemas/UserAddress' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            post: {
+                summary: 'Criar novo endereço',
+                tags: ['Addresses'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: { $ref: '#/components/schemas/AddressRequest' }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Endereço criado com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        message: { type: 'string' },
+                                        data: { $ref: '#/components/schemas/UserAddress' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos' }
+                }
+            }
+        },
+        '/addresses/default': {
+            get: {
+                summary: 'Obter endereço padrão',
+                tags: ['Addresses'],
+                security: [{ bearerAuth: [] }],
+                responses: {
+                    '200': {
+                        description: 'Endereço padrão obtido com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: { $ref: '#/components/schemas/UserAddress' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '404': { description: 'Nenhum endereço padrão encontrado' }
+                }
+            }
+        },
+        '/addresses/{id}': {
+            put: {
+                summary: 'Atualizar endereço',
+                tags: ['Addresses'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: { $ref: '#/components/schemas/AddressRequest' }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Endereço atualizado com sucesso' },
+                    '404': { description: 'Endereço não encontrado' }
+                }
+            },
+            delete: {
+                summary: 'Eliminar endereço',
+                tags: ['Addresses'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                responses: {
+                    '200': { description: 'Endereço eliminado com sucesso' },
+                    '400': { description: 'Não é possível eliminar endereço usado em encomendas' },
+                    '404': { description: 'Endereço não encontrado' }
+                }
+            }
+        },
+        '/addresses/{id}/default': {
+            put: {
+                summary: 'Definir endereço como padrão',
+                tags: ['Addresses'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                responses: {
+                    '200': { description: 'Endereço padrão definido com sucesso' },
+                    '404': { description: 'Endereço não encontrado' }
                 }
             }
         },

@@ -9,7 +9,7 @@ export async function exportUserData(req: Request, res: Response, next: NextFunc
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        licenses: true,
+        // licenses: true, // removido
         orders: true,
         auditLogs: true,
         reviews: true,

@@ -370,7 +370,7 @@ export const createCampaign = async (req: Request, res: Response) => {
                 creator: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true, lastName: true,
                         email: true
                     }
                 }
@@ -424,7 +424,7 @@ export const getCampaigns = async (req: Request, res: Response) => {
                     creator: {
                         select: {
                             id: true,
-                            name: true,
+                            firstName: true, lastName: true,
                             email: true
                         }
                     },
@@ -481,7 +481,7 @@ export const getCampaignDetails = async (req: Request, res: Response) => {
                 creator: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true, lastName: true,
                         email: true
                     }
                 },
@@ -878,7 +878,7 @@ export const getTemplates = async (req: Request, res: Response) => {
                 creator: {
                     select: {
                         id: true,
-                        name: true,
+                        firstName: true, lastName: true,
                         email: true
                     }
                 }

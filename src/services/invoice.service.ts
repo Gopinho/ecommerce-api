@@ -38,7 +38,7 @@ export async function generateInvoice(orderId: string): Promise<string> {
     doc.moveDown();
 
     doc.fontSize(12).text(`Order ID: ${order.id}`);
-    doc.text(`Client: ${order.user.name} (${order.user.email})`);
+    doc.text(`Client: ${order.user.firstName} ${order.user.lastName} (${order.user.email})`);
     doc.text(`Date: ${order.createdAt.toISOString().split('T')[0]}`);
     doc.moveDown();
 
