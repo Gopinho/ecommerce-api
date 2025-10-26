@@ -554,9 +554,9 @@ WHERE table_schema = 'fashion_store';
 ### **Variáveis de Ambiente (.env)**
 ```env
 # Configuração Telegram
-TELEGRAM_TOKEN="8317206090:AAHmxm7ZxE6jAyKDYaW9JMX48NabcD-xJG8"
-TELEGRAM_CHAT_ID="-4758716428"              # Chat para encomendas
-TELEGRAM_ERROR_CHAT_ID="5358498809"         # Chat para erros do servidor
+TELEGRAM_TOKEN="<Bot_Token>"
+TELEGRAM_CHAT_ID="<CHAT_ID>"              # Chat para encomendas
+TELEGRAM_ERROR_CHAT_ID="ERROR_CHAT_ID"    # Chat para erros do servidor
 ```
 
 ## 🚀 **Funcionalidades Implementadas**
