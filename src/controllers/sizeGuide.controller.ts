@@ -347,7 +347,9 @@ export class SizeGuideController {
                     if (chest && typedMeasurements.chest) {
                         totalDifference += Math.abs(parseFloat(chest as string) - typedMeasurements.chest);
                         measurementCount++;
-                    } if (measurementCount > 0) {
+                    }
+
+                    if (measurementCount > 0) {
                         const avgDifference = totalDifference / measurementCount;
                         if (avgDifference < minDifference) {
                             minDifference = avgDifference;

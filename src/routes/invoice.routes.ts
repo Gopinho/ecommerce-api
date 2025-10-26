@@ -4,6 +4,24 @@ import { authenticate } from '../middlewares/authenticate';
 
 const router = Router();
 
+// Esta rota deve vir ANTES da rota /:id para evitar conflito
+/**
+ * @openapi
+ * /invoices/download/all:
+ *   get:
+ *     summary: Baixar todas as faturas do utilizador autenticado
+ *     tags:
+ *       - Invoices
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Todas as faturas baixadas com sucesso
+ *       401:
+ *         description: Não autenticado
+ */
+router.get('/download/all', authenticate, downloadAllUserFiles);
+
 /**
  * @openapi
  * /invoices/{id}:
@@ -27,22 +45,5 @@ const router = Router();
  *         description: Não autenticado
  */
 router.get('/:id', authenticate, downloadInvoice);
-
-/**
- * @openapi
- * /invoices/download/all:
- *   get:
- *     summary: Baixar todas as faturas do utilizador autenticado
- *     tags:
- *       - Invoices
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Todas as faturas baixadas com sucesso
- *       401:
- *         description: Não autenticado
- */
-router.get('/download/all', authenticate, downloadAllUserFiles);
 
 export default router;

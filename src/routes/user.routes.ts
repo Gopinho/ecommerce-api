@@ -24,7 +24,6 @@ const router = Router();
  *                 id: "clx123"
  *                 email: "user@email.com"
  *                 name: "Utilizador Exemplo"
- *                 licenses: []
  *                 orders: []
  *                 auditLogs: []
  *                 reviews: []

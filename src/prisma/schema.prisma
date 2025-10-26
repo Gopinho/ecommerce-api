@@ -25,7 +25,6 @@ model User {
   auditLogs AuditLog[]
   passwordResetTokens PasswordResetToken[]
   reviews Review[]
-  licenses License[]
 
   groupId   String?        @db.VarChar(25)
   group     UserGroup?     @relation(fields: [groupId], references: [id])
@@ -51,7 +50,6 @@ model Product {
   cartItems CartItem[]
   wishedBy User[] @relation("Wishlist")
   reviews Review[]
-  licenses License[]
   sold Int @default(0)
   
   // Fashion-specific fields
@@ -96,7 +94,6 @@ model Order {
   status    OrderStatus @default(PENDING)
   couponId String?    @db.VarChar(25)
   coupon   Coupon?    @relation(fields: [couponId], references: [id])
-  licenses License[]
   total  Decimal     @db.Decimal(10, 2)
 }
 
@@ -200,21 +197,6 @@ model Coupon {
   createdAt     DateTime @default(now())
 
   orders        Order[]  // Encomendas que usaram este cupom
-}
-
-model License {
-  id          String   @id @default(cuid()) @db.VarChar(25)
-  orderId     String   @db.VarChar(25)
-  productId   String   @db.VarChar(25)
-  key         String   @unique @db.VarChar(255)
-  userId      String   @db.VarChar(25)
-  createdAt   DateTime @default(now())
-  expiresAt   DateTime?
-  status      String   @default("active") @db.VarChar(20) // active, expired, revoked
-
-  order       Order    @relation(fields: [orderId], references: [id])
-  product     Product  @relation(fields: [productId], references: [id])
-  user        User     @relation(fields: [userId], references: [id])
 }
 
 model Permission {

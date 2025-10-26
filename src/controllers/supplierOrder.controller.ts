@@ -28,7 +28,7 @@ const CreateSupplierOrderSchema = z.object({
     orderNumber: z.string().optional(),
     expectedDate: z.string().datetime().optional(),
     notes: z.string().optional(),
-    currency: z.string().length(3, 'Moeda deve ter 3 caracteres').optional(),
+    currency: z.string().length(3, 'Moeda deve ter 3 caracteres').default('EUR'),
     items: z.array(SupplierOrderItemSchema).min(1, 'Pelo menos um item é obrigatório')
 });
 

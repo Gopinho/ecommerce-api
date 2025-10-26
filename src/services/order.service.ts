@@ -178,8 +178,7 @@ export async function getOrderById(id: string) {
                     email: true
                 }
             },
-            coupon: true,
-            licenses: true
+            coupon: true
         }
     });
 

@@ -24,7 +24,7 @@ const CreateSupplierSchema = z.object({
     website: z.string().url('URL inválida').optional(),
     notes: z.string().optional(),
     paymentTerms: z.string().optional(),
-    currency: z.string().length(3, 'Moeda deve ter 3 caracteres').optional()
+    currency: z.string().length(3, 'Moeda deve ter 3 caracteres').default('EUR')
 });
 
 // Schema de validação para atualização de fornecedor
@@ -42,7 +42,7 @@ const UpdateSupplierSchema = z.object({
     notes: z.string().optional(),
     isActive: z.boolean().optional(),
     paymentTerms: z.string().optional(),
-    currency: z.string().length(3, 'Moeda deve ter 3 caracteres').optional()
+    currency: z.string().length(3, 'Moeda deve ter 3 caracteres').default('EUR')
 });
 
 export async function createSupplierController(req: Request, res: Response) {

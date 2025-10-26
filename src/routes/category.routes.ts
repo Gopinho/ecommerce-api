@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createCategory, getAllCategories, updateCategory, deleteCategory } from '../controllers/category.controller';
+import { createCategory, getAllCategories, getCategoryById, updateCategory, deleteCategory } from '../controllers/category.controller';
 import { authenticate } from '../middlewares/authenticate';
 import { authorizeRole } from '../middlewares/authorizeRole';
 
@@ -112,5 +112,27 @@ router.delete('/:id', authenticate, authorizeRole('ADMIN'), deleteCategory);
  *         description: Lista de categorias
  */
 router.get('/', getAllCategories);
+
+/**
+ * @openapi
+ * /categories/{id}:
+ *   get:
+ *     summary: Obter categoria por ID
+ *     tags:
+ *       - Categories
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: ID da categoria
+ *     responses:
+ *       200:
+ *         description: Categoria encontrada
+ *       404:
+ *         description: Categoria não encontrada
+ */
+router.get('/:id', getCategoryById);
 
 export default router;

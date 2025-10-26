@@ -23,7 +23,9 @@ export async function generateInvoice(orderId: string): Promise<string> {
             ? subtotal * (decimalToNumber(order.coupon.amount) / 100)
             : decimalToNumber(order.coupon.amount);
     }
-    const total = subtotal - discount; const doc = new PDFDocument({ margin: 50 });
+    const total = subtotal - discount;
+
+    const doc = new PDFDocument({ margin: 50 });
     const filePath = path.join('invoices', `invoice_${order.id}.pdf`);
 
     // Garante que a pasta invoices existe
@@ -46,7 +48,9 @@ export async function generateInvoice(orderId: string): Promise<string> {
         doc.text(
             `${item.product.name} - €${itemPrice.toFixed(2)} x ${item.quantity} = €${(itemPrice * item.quantity).toFixed(2)}`
         );
-    }); doc.moveDown();
+    });
+
+    doc.moveDown();
     if (order.coupon) {
         doc.text(`Coupon Aplied: ${order.coupon.code} (-€${discount.toFixed(2)})`);
     }

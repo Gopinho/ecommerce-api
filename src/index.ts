@@ -24,10 +24,8 @@ import auditRoutes from './routes/audit.routes';
 import reviewRoutes from './routes/review.routes';
 import couponRoutes from './routes/coupon.routes';
 import invoiceRoutes from './routes/invoice.routes';
-import licenseRoutes from './routes/license.routes';
 import uploadRoutes from './routes/upload.routes';
 import userRoutes from './routes/user.routes';
-import currencyRoutes from './routes/currency.routes';
 import permissionRoutes from './routes/permission.routes';
 import productVariantRoutes from './routes/productVariant.routes';
 import sizeGuideRoutes from './routes/sizeGuide.routes';
@@ -79,8 +77,7 @@ app.use('/wishlist', wishlistRoutes);
 app.use('/admin/audit-logs', auditRoutes);
 app.use('/reviews', reviewRoutes);
 app.use('/coupon', couponRoutes);
-app.use('/invoice', invoiceRoutes);
-app.use('/license', licenseRoutes);
+app.use('/invoices', invoiceRoutes);
 
 // Configuração do Swagger UI com opções adicionais
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
@@ -101,7 +98,6 @@ app.get('/swagger.json', (_req, res) => {
 
 app.use('/upload', uploadRoutes);
 app.use('/user', userRoutes);
-app.use('/currency', currencyRoutes);
 app.use('/api', permissionRoutes);
 app.use('/variants', productVariantRoutes);
 app.use('/size-guides', sizeGuideRoutes);

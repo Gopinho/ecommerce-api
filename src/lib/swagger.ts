@@ -582,6 +582,25 @@ const swaggerDefinition = {
                 }
             }
         },
+        '/products/popular': {
+            get: {
+                summary: 'Listar produtos populares',
+                tags: ['Produtos'],
+                responses: {
+                    '200': {
+                        description: 'Lista de produtos populares',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: { '$ref': '#/components/schemas/Product' }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
 
         // === PEDIDOS ===
         '/orders': {
@@ -632,6 +651,117 @@ const swaggerDefinition = {
                 }
             }
         },
+        '/orders/my': {
+            get: {
+                summary: 'Obter minhas encomendas',
+                tags: ['Pedidos'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+                    { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Lista das minhas encomendas',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        orders: {
+                                            type: 'array',
+                                            items: { '$ref': '#/components/schemas/Order' }
+                                        },
+                                        pagination: {
+                                            type: 'object',
+                                            properties: {
+                                                page: { type: 'integer' },
+                                                limit: { type: 'integer' },
+                                                total: { type: 'integer' },
+                                                pages: { type: 'integer' }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        '/orders/stats': {
+            get: {
+                summary: 'Estatísticas dos pedidos (Admin)',
+                tags: ['Pedidos'],
+                security: [{ bearerAuth: [] }],
+                responses: {
+                    '200': {
+                        description: 'Estatísticas dos pedidos',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        totalOrders: { type: 'integer' },
+                                        pendingOrders: { type: 'integer' },
+                                        paidOrders: { type: 'integer' },
+                                        shippedOrders: { type: 'integer' },
+                                        cancelledOrders: { type: 'integer' },
+                                        totalRevenue: { type: 'number' }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        '/orders/{id}/status': {
+            put: {
+                summary: 'Atualizar status do pedido (Admin)',
+                tags: ['Pedidos'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['status'],
+                                properties: {
+                                    status: {
+                                        type: 'string',
+                                        enum: ['PENDING', 'PAID', 'SHIPPED', 'DELIVERED', 'CANCELLED']
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Status atualizado com sucesso' },
+                    '404': { description: 'Pedido não encontrado' }
+                }
+            }
+        },
+        '/orders/{id}/cancel': {
+            post: {
+                summary: 'Cancelar pedido',
+                tags: ['Pedidos'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                responses: {
+                    '200': { description: 'Pedido cancelado com sucesso' },
+                    '400': { description: 'Pedido não pode ser cancelado' },
+                    '404': { description: 'Pedido não encontrado' }
+                }
+            }
+        },
 
         // === CATEGORIAS ===
         '/categories': {
@@ -667,6 +797,13 @@ const swaggerDefinition = {
             get: {
                 summary: 'Listar coleções',
                 tags: ['Coleções'],
+                parameters: [
+                    { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+                    { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+                    { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
+                    { name: 'isFeatured', in: 'query', schema: { type: 'boolean' } },
+                    { name: 'season', in: 'query', schema: { type: 'string' } }
+                ],
                 responses: {
                     '200': { description: 'Lista de coleções' }
                 }
@@ -675,8 +812,66 @@ const swaggerDefinition = {
                 summary: 'Criar coleção',
                 tags: ['Coleções'],
                 security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['name'],
+                                properties: {
+                                    name: { type: 'string' },
+                                    description: { type: 'string' },
+                                    season: { type: 'string' },
+                                    year: { type: 'integer' },
+                                    launchDate: { type: 'string', format: 'date-time' },
+                                    coverImage: { type: 'string' },
+                                    slug: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                },
                 responses: {
-                    '201': { description: 'Coleção criada com sucesso' }
+                    '201': { description: 'Coleção criada com sucesso' },
+                    '400': { description: 'Nome é obrigatório' },
+                    '409': { description: 'Coleção já existe' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/collections/featured': {
+            get: {
+                summary: 'Obter coleções em destaque',
+                tags: ['Coleções'],
+                responses: {
+                    '200': { description: 'Coleções em destaque' }
+                }
+            }
+        },
+        '/collections/stats': {
+            get: {
+                summary: 'Obter estatísticas das coleções',
+                tags: ['Coleções'],
+                security: [{ bearerAuth: [] }],
+                responses: {
+                    '200': { description: 'Estatísticas das coleções' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/collections/slug/{slug}': {
+            get: {
+                summary: 'Obter coleção por slug',
+                tags: ['Coleções'],
+                parameters: [
+                    { name: 'slug', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                responses: {
+                    '200': { description: 'Detalhes da coleção' },
+                    '404': { description: 'Coleção não encontrada' }
                 }
             }
         },
@@ -695,7 +890,8 @@ const swaggerDefinition = {
                                 schema: { $ref: '#/components/schemas/Cart' }
                             }
                         }
-                    }
+                    },
+                    '401': { description: 'Não autenticado' }
                 }
             },
             post: {
@@ -719,7 +915,9 @@ const swaggerDefinition = {
                     }
                 },
                 responses: {
-                    '200': { description: 'Item adicionado ao carrinho' }
+                    '201': { description: 'Item adicionado ao carrinho' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' }
                 }
             }
         },
@@ -746,7 +944,10 @@ const swaggerDefinition = {
                     }
                 },
                 responses: {
-                    '200': { description: 'Item atualizado no carrinho' }
+                    '200': { description: 'Item atualizado no carrinho' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '404': { description: 'Item não encontrado' }
                 }
             },
             delete: {
@@ -757,17 +958,9 @@ const swaggerDefinition = {
                     { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
                 ],
                 responses: {
-                    '200': { description: 'Item removido do carrinho' }
-                }
-            }
-        },
-        '/cart/clear': {
-            delete: {
-                summary: 'Limpar todo o carrinho',
-                tags: ['Carrinho'],
-                security: [{ bearerAuth: [] }],
-                responses: {
-                    '200': { description: 'Carrinho limpo com sucesso' }
+                    '200': { description: 'Item removido do carrinho' },
+                    '401': { description: 'Não autenticado' },
+                    '404': { description: 'Item não encontrado' }
                 }
             }
         },
@@ -823,26 +1016,65 @@ const swaggerDefinition = {
                 summary: 'Listar fornecedores',
                 tags: ['Fornecedores'],
                 security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+                    { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+                    { name: 'isActive', in: 'query', schema: { type: 'boolean' } },
+                    { name: 'search', in: 'query', schema: { type: 'string' } }
+                ],
                 responses: {
-                    '200': {
-                        description: 'Lista de fornecedores',
-                        content: {
-                            'application/json': {
-                                schema: {
-                                    type: 'array',
-                                    items: { $ref: '#/components/schemas/Supplier' }
-                                }
-                            }
-                        }
-                    }
+                    '200': { description: 'Lista de fornecedores' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             },
             post: {
                 summary: 'Criar fornecedor',
                 tags: ['Fornecedores'],
                 security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['name'],
+                                properties: {
+                                    name: { type: 'string' },
+                                    contactName: { type: 'string' },
+                                    email: { type: 'string', format: 'email' },
+                                    phone: { type: 'string' },
+                                    address: { type: 'string' },
+                                    city: { type: 'string' },
+                                    country: { type: 'string' },
+                                    postalCode: { type: 'string' },
+                                    taxNumber: { type: 'string' },
+                                    website: { type: 'string', format: 'uri' },
+                                    notes: { type: 'string' },
+                                    paymentTerms: { type: 'string' },
+                                    currency: { type: 'string', minLength: 3, maxLength: 3 }
+                                }
+                            }
+                        }
+                    }
+                },
                 responses: {
-                    '201': { description: 'Fornecedor criado com sucesso' }
+                    '201': { description: 'Fornecedor criado com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/suppliers/stats': {
+            get: {
+                summary: 'Obter estatísticas dos fornecedores',
+                tags: ['Fornecedores'],
+                security: [{ bearerAuth: [] }],
+                responses: {
+                    '200': { description: 'Estatísticas dos fornecedores' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             }
         },
@@ -850,182 +1082,318 @@ const swaggerDefinition = {
         // === PEDIDOS DE FORNECEDORES ===
         '/supplier-orders': {
             get: {
-                summary: 'Listar pedidos de fornecedores',
+                summary: 'Listar encomendas de fornecedores',
                 tags: ['Pedidos de Fornecedores'],
                 security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+                    { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } },
+                    { name: 'status', in: 'query', schema: { type: 'string', enum: ['PENDENTE', 'ENVIADA', 'RECEBIDA', 'CANCELADA'] } },
+                    { name: 'supplierId', in: 'query', schema: { type: 'string' } },
+                    { name: 'search', in: 'query', schema: { type: 'string' } }
+                ],
                 responses: {
-                    '200': { description: 'Lista de pedidos de fornecedores' }
+                    '200': { description: 'Lista de encomendas' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             },
             post: {
-                summary: 'Criar pedido para fornecedor',
+                summary: 'Criar encomenda para fornecedor',
                 tags: ['Pedidos de Fornecedores'],
                 security: [{ bearerAuth: [] }],
-                responses: {
-                    '201': { description: 'Pedido criado com sucesso' }
-                }
-            }
-        },
-
-        // === ESTOQUE ===
-        '/stock': {
-            get: {
-                summary: 'Consultar estoque',
-                tags: ['Estoque'],
-                security: [{ bearerAuth: [] }],
-                responses: {
-                    '200': {
-                        description: 'Informações de estoque',
-                        content: {
-                            'application/json': {
-                                schema: {
-                                    type: 'array',
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['supplierId', 'items'],
+                                properties: {
+                                    supplierId: { type: 'string' },
+                                    orderNumber: { type: 'string' },
+                                    expectedDate: { type: 'string', format: 'date-time' },
+                                    notes: { type: 'string' },
+                                    currency: { type: 'string', minLength: 3, maxLength: 3 },
                                     items: {
-                                        type: 'object',
-                                        properties: {
-                                            product_id: { type: 'string' },
-                                            quantity: { type: 'integer' },
-                                            reserved: { type: 'integer' },
-                                            available: { type: 'integer' }
+                                        type: 'array',
+                                        minItems: 1,
+                                        items: {
+                                            type: 'object',
+                                            required: ['productName', 'quantity', 'unitPrice'],
+                                            properties: {
+                                                productId: { type: 'string' },
+                                                productName: { type: 'string' },
+                                                description: { type: 'string' },
+                                                quantity: { type: 'integer', minimum: 1 },
+                                                unitPrice: { type: 'number', minimum: 0 },
+                                                sku: { type: 'string' }
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
+                },
+                responses: {
+                    '201': { description: 'Encomenda criada com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '404': { description: 'Fornecedor não encontrado' },
+                    '409': { description: 'Número da encomenda já existe' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/supplier-orders/stats': {
+            get: {
+                summary: 'Obter estatísticas das encomendas',
+                tags: ['Pedidos de Fornecedores'],
+                security: [{ bearerAuth: [] }],
+                responses: {
+                    '200': { description: 'Estatísticas das encomendas' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+
+        // === ESTOQUE ===
+        '/stock/low-stock/products': {
+            get: {
+                summary: 'Obter produtos com stock baixo',
+                tags: ['Estoque'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'threshold', in: 'query', schema: { type: 'integer', default: 10 }, description: 'Limite de stock considerado baixo' }
+                ],
+                responses: {
+                    '200': { description: 'Lista de produtos com stock baixo' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/stock/statistics/overview': {
+            get: {
+                summary: 'Obter estatísticas gerais de stock',
+                tags: ['Estoque'],
+                security: [{ bearerAuth: [] }],
+                responses: {
+                    '200': { description: 'Estatísticas de stock' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/stock/{id}': {
+            get: {
+                summary: 'Obter informações de stock de um produto',
+                tags: ['Estoque'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' }
+                ],
+                responses: {
+                    '200': { description: 'Informações de stock obtidas com sucesso' },
+                    '404': { description: 'Produto não encontrado' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            },
+            put: {
+                summary: 'Atualizar stock de um produto',
+                tags: ['Estoque'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    realStock: { type: 'integer', minimum: 0, description: 'Stock físico real disponível' },
+                                    fictionalStock: { type: 'integer', minimum: 0, description: 'Stock fictício/planejado para a coleção' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Stock atualizado com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '404': { description: 'Produto não encontrado' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             }
         },
 
         // === AVALIAÇÕES ===
-        '/reviews': {
+        '/reviews/user/{userId}': {
             get: {
-                summary: 'Listar avaliações',
+                summary: 'Obter avaliações por usuário',
                 tags: ['Avaliações'],
+                security: [{ bearerAuth: [] }],
                 parameters: [
-                    { name: 'product_id', in: 'query', schema: { type: 'string' } }
+                    { name: 'userId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do usuário' }
                 ],
                 responses: {
-                    '200': {
-                        description: 'Lista de avaliações',
-                        content: {
-                            'application/json': {
-                                schema: {
-                                    type: 'array',
-                                    items: { $ref: '#/components/schemas/Review' }
+                    '200': { description: 'Avaliações obtidas com sucesso' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/reviews/{productId}': {
+            get: {
+                summary: 'Obter avaliações por produto',
+                tags: ['Avaliações'],
+                parameters: [
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' }
+                ],
+                responses: {
+                    '200': { description: 'Avaliações obtidas com sucesso' },
+                    '404': { description: 'Produto não encontrado' }
+                }
+            },
+            post: {
+                summary: 'Criar ou atualizar avaliação',
+                tags: ['Avaliações'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['rating'],
+                                properties: {
+                                    rating: { type: 'integer', minimum: 1, maximum: 5, description: 'Classificação de 1 a 5 estrelas' },
+                                    comment: { type: 'string', maxLength: 1000, description: 'Comentário opcional sobre o produto' }
                                 }
                             }
                         }
                     }
+                },
+                responses: {
+                    '200': { description: 'Avaliação criada ou atualizada com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' }
                 }
             },
-            post: {
-                summary: 'Criar avaliação',
+            delete: {
+                summary: 'Remover avaliação',
                 tags: ['Avaliações'],
                 security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' }
+                ],
                 responses: {
-                    '201': { description: 'Avaliação criada com sucesso' }
+                    '204': { description: 'Avaliação removida com sucesso' },
+                    '401': { description: 'Não autenticado' },
+                    '404': { description: 'Avaliação não encontrada' }
+                }
+            }
+        },
+        '/reviews/{productId}/average': {
+            get: {
+                summary: 'Obter média de avaliações',
+                tags: ['Avaliações'],
+                parameters: [
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' }
+                ],
+                responses: {
+                    '200': { description: 'Média de avaliações obtida com sucesso' },
+                    '404': { description: 'Produto não encontrado' }
                 }
             }
         },
 
         // === CUPONS ===
         '/coupon': {
-            get: {
-                summary: 'Listar cupons',
+            post: {
+                summary: 'Criar novo cupom',
                 tags: ['Cupons'],
                 security: [{ bearerAuth: [] }],
-                responses: {
-                    '200': {
-                        description: 'Lista de cupons',
-                        content: {
-                            'application/json': {
-                                schema: {
-                                    type: 'array',
-                                    items: { $ref: '#/components/schemas/Coupon' }
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['code', 'amount', 'discountType'],
+                                properties: {
+                                    code: { type: 'string', minLength: 3, description: 'Código único do cupom' },
+                                    amount: { type: 'number', minimum: 0, description: 'Valor do desconto' },
+                                    discountType: { type: 'string', enum: ['percent', 'fixed'], description: 'Tipo de desconto (percentual ou valor fixo)' },
+                                    expiresAt: { type: 'string', format: 'date-time', description: 'Data de expiração (opcional)' },
+                                    usageLimit: { type: 'integer', minimum: 1, description: 'Limite de usos (opcional)' }
                                 }
                             }
                         }
                     }
-                }
-            },
-            post: {
-                summary: 'Criar cupom',
-                tags: ['Cupons'],
-                security: [{ bearerAuth: [] }],
+                },
                 responses: {
-                    '201': { description: 'Cupom criado com sucesso' }
+                    '201': { description: 'Cupom criado com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             }
         },
-        '/coupon/validate/{code}': {
+        '/coupon/{code}': {
             get: {
-                summary: 'Validar cupom',
+                summary: 'Obter cupom por código',
                 tags: ['Cupons'],
+                security: [{ bearerAuth: [] }],
                 parameters: [
-                    { name: 'code', in: 'path', required: true, schema: { type: 'string' } }
+                    { name: 'code', in: 'path', required: true, schema: { type: 'string' }, description: 'Código do cupom' }
                 ],
                 responses: {
-                    '200': { description: 'Cupom válido' },
-                    '404': { description: 'Cupom não encontrado ou expirado' }
+                    '200': { description: 'Cupom encontrado com sucesso' },
+                    '401': { description: 'Não autenticado' },
+                    '404': { description: 'Cupom não encontrado' }
                 }
             }
         },
 
         // === USUÁRIOS ===
-        '/user': {
+        '/user/export': {
             get: {
-                summary: 'Listar usuários (Admin)',
+                summary: 'Exportar todos os dados do utilizador autenticado (GDPR)',
                 tags: ['Usuários'],
                 security: [{ bearerAuth: [] }],
                 responses: {
                     '200': {
-                        description: 'Lista de usuários',
+                        description: 'Dados exportados em JSON',
                         content: {
                             'application/json': {
                                 schema: {
-                                    type: 'array',
-                                    items: { $ref: '#/components/schemas/User' }
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string', description: 'ID do utilizador' },
+                                        email: { type: 'string', description: 'Email do utilizador' },
+                                        name: { type: 'string', description: 'Nome do utilizador' },
+                                        role: { type: 'string', description: 'Role do utilizador' },
+                                        orders: { type: 'array', description: 'Encomendas do utilizador' },
+                                        auditLogs: { type: 'array', description: 'Logs de auditoria' },
+                                        reviews: { type: 'array', description: 'Avaliações do utilizador' },
+                                        wishlist: { type: 'array', description: 'Lista de desejos' }
+                                    }
                                 }
                             }
                         }
-                    }
-                }
-            }
-        },
-        '/user/{id}': {
-            get: {
-                summary: 'Obter usuário por ID',
-                tags: ['Usuários'],
-                security: [{ bearerAuth: [] }],
-                parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Detalhes do usuário' },
-                    '404': { description: 'Usuário não encontrado' }
-                }
-            },
-            put: {
-                summary: 'Atualizar usuário',
-                tags: ['Usuários'],
-                security: [{ bearerAuth: [] }],
-                parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Usuário atualizado com sucesso' }
-                }
-            },
-            delete: {
-                summary: 'Excluir usuário',
-                tags: ['Usuários'],
-                security: [{ bearerAuth: [] }],
-                parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Usuário excluído com sucesso' }
+                    },
+                    '401': { description: 'Não autenticado (token JWT obrigatório)' },
+                    '404': { description: 'Utilizador não encontrado' }
                 }
             }
         },
@@ -1033,11 +1401,25 @@ const swaggerDefinition = {
         // === ADMINISTRAÇÃO ===
         '/admin': {
             get: {
-                summary: 'Painel administrativo',
+                summary: 'Área administrativa',
                 tags: ['Administração'],
                 security: [{ bearerAuth: [] }],
                 responses: {
-                    '200': { description: 'Acesso ao painel administrativo' }
+                    '200': {
+                        description: 'Acesso à área administrativa',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        message: { type: 'string', example: 'Área administrativa' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             }
         },
@@ -1046,8 +1428,49 @@ const swaggerDefinition = {
                 summary: 'Estatísticas administrativas',
                 tags: ['Administração'],
                 security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'recentOrdersLimit',
+                        in: 'query',
+                        required: false,
+                        schema: { type: 'integer', minimum: 1, maximum: 100, default: 10 },
+                        description: 'Limite de pedidos recentes a retornar'
+                    }
+                ],
                 responses: {
-                    '200': { description: 'Estatísticas do sistema' }
+                    '200': {
+                        description: 'Estatísticas administrativas obtidas com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        totalSales: { type: 'integer', description: 'Total de vendas' },
+                                        totalRevenue: { type: 'number', description: 'Receita total' },
+                                        totalUsers: { type: 'integer', description: 'Total de utilizadores' },
+                                        totalProducts: { type: 'integer', description: 'Total de produtos' },
+                                        recentOrders: {
+                                            type: 'array',
+                                            description: 'Pedidos recentes',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'string' },
+                                                    total: { type: 'number' },
+                                                    status: { type: 'string' },
+                                                    createdAt: { type: 'string', format: 'date-time' },
+                                                    user: { type: 'object' }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Parâmetros inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             }
         },
@@ -1064,20 +1487,149 @@ const swaggerDefinition = {
         },
 
         // === VARIANTES DE PRODUTOS ===
-        '/variants': {
+        '/variants/product/{productId}/variants': {
             get: {
-                summary: 'Listar variantes de produtos',
+                summary: 'Obter todas as variantes de um produto',
                 tags: ['Variantes de Produtos'],
-                security: [{ bearerAuth: [] }],
                 parameters: [
-                    { name: 'productId', in: 'query', schema: { type: 'string' } }
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' }
                 ],
                 responses: {
-                    '200': { description: 'Lista de variantes' }
+                    '200': {
+                        description: 'Lista de variantes do produto',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'string' },
+                                                    productId: { type: 'string' },
+                                                    size: { type: 'string' },
+                                                    color: { type: 'string' },
+                                                    colorHex: { type: 'string' },
+                                                    stock: { type: 'integer' },
+                                                    price: { type: 'number' },
+                                                    sku: { type: 'string' },
+                                                    weight: { type: 'number' }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '500': { description: 'Erro interno do servidor' }
                 }
-            },
+            }
+        },
+        '/variants/product/{productId}/sizes': {
+            get: {
+                summary: 'Obter tamanhos disponíveis de um produto',
+                tags: ['Variantes de Produtos'],
+                parameters: [
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Tamanhos disponíveis (com stock > 0)',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: { type: 'array', items: { type: 'string' } }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            }
+        },
+        '/variants/product/{productId}/colors': {
+            get: {
+                summary: 'Obter cores disponíveis de um produto',
+                tags: ['Variantes de Produtos'],
+                parameters: [
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' },
+                    { name: 'size', in: 'query', required: false, schema: { type: 'string' }, description: 'Filtrar por tamanho específico' }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Cores disponíveis (com stock > 0)',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    color: { type: 'string' },
+                                                    colorHex: { type: 'string' }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            }
+        },
+        '/variants/product/{productId}/stock': {
+            get: {
+                summary: 'Verificar stock de uma variante específica',
+                tags: ['Variantes de Produtos'],
+                parameters: [
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' },
+                    { name: 'size', in: 'query', required: true, schema: { type: 'string' }, description: 'Tamanho da variante' },
+                    { name: 'color', in: 'query', required: true, schema: { type: 'string' }, description: 'Cor da variante' }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Informações de stock da variante',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'object',
+                                            properties: {
+                                                stock: { type: 'integer' },
+                                                available: { type: 'boolean' }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Tamanho e cor são obrigatórios' },
+                    '404': { description: 'Variante não encontrada' },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            }
+        },
+        '/variants': {
             post: {
-                summary: 'Criar variante',
+                summary: 'Criar nova variante de produto',
                 tags: ['Variantes de Produtos'],
                 security: [{ bearerAuth: [] }],
                 requestBody: {
@@ -1086,20 +1638,28 @@ const swaggerDefinition = {
                         'application/json': {
                             schema: {
                                 type: 'object',
-                                required: ['productId', 'name', 'price'],
+                                required: ['productId', 'size', 'color', 'stock'],
                                 properties: {
-                                    productId: { type: 'string' },
-                                    name: { type: 'string' },
-                                    price: { type: 'number' },
-                                    sku: { type: 'string' },
-                                    stock: { type: 'integer' }
+                                    productId: { type: 'string', format: 'uuid', description: 'ID do produto' },
+                                    size: { type: 'string', minLength: 1, description: 'Tamanho da variante' },
+                                    color: { type: 'string', minLength: 1, description: 'Cor da variante' },
+                                    colorHex: { type: 'string', description: 'Código hexadecimal da cor (opcional)' },
+                                    stock: { type: 'integer', minimum: 0, description: 'Quantidade em stock' },
+                                    price: { type: 'number', minimum: 0, description: 'Preço específico da variante (opcional)' },
+                                    sku: { type: 'string', description: 'SKU da variante (opcional)' },
+                                    weight: { type: 'number', minimum: 0, description: 'Peso da variante (opcional)' }
                                 }
                             }
                         }
                     }
                 },
                 responses: {
-                    '201': { description: 'Variante criada com sucesso' }
+                    '201': { description: 'Variante criada com sucesso' },
+                    '400': { description: 'Dados inválidos ou variante já existe' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' },
+                    '404': { description: 'Produto não encontrado' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
@@ -1108,10 +1668,39 @@ const swaggerDefinition = {
                 summary: 'Obter variante por ID',
                 tags: ['Variantes de Produtos'],
                 parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID da variante' }
                 ],
                 responses: {
-                    '200': { description: 'Detalhes da variante' }
+                    '200': {
+                        description: 'Detalhes da variante',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'object',
+                                            properties: {
+                                                id: { type: 'string' },
+                                                productId: { type: 'string' },
+                                                size: { type: 'string' },
+                                                color: { type: 'string' },
+                                                colorHex: { type: 'string' },
+                                                stock: { type: 'integer' },
+                                                price: { type: 'number' },
+                                                sku: { type: 'string' },
+                                                weight: { type: 'number' },
+                                                product: { type: 'object' }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '404': { description: 'Variante não encontrada' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             },
             put: {
@@ -1119,26 +1708,95 @@ const swaggerDefinition = {
                 tags: ['Variantes de Produtos'],
                 security: [{ bearerAuth: [] }],
                 parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID da variante' }
                 ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    size: { type: 'string', minLength: 1, description: 'Tamanho da variante' },
+                                    color: { type: 'string', minLength: 1, description: 'Cor da variante' },
+                                    colorHex: { type: 'string', description: 'Código hexadecimal da cor' },
+                                    stock: { type: 'integer', minimum: 0, description: 'Quantidade em stock' },
+                                    price: { type: 'number', minimum: 0, description: 'Preço da variante' },
+                                    sku: { type: 'string', description: 'SKU da variante' },
+                                    weight: { type: 'number', minimum: 0, description: 'Peso da variante' }
+                                }
+                            }
+                        }
+                    }
+                },
                 responses: {
-                    '200': { description: 'Variante atualizada com sucesso' }
+                    '200': { description: 'Variante atualizada com sucesso' },
+                    '400': { description: 'Dados inválidos ou duplicação de variante' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' },
+                    '404': { description: 'Variante não encontrada' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             },
             delete: {
-                summary: 'Excluir variante',
+                summary: 'Apagar variante',
                 tags: ['Variantes de Produtos'],
                 security: [{ bearerAuth: [] }],
                 parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID da variante' }
                 ],
                 responses: {
-                    '200': { description: 'Variante excluída com sucesso' }
+                    '200': { description: 'Variante eliminada com sucesso' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' },
+                    '404': { description: 'Variante não encontrada' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
 
         // === IMAGENS DE PRODUTOS ===
+        '/product-images/product/{productId}': {
+            get: {
+                summary: 'Obter todas as imagens de um produto',
+                tags: ['Imagens de Produtos'],
+                parameters: [
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' }, description: 'ID do produto' }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Lista de imagens do produto (ordenadas por sortOrder)',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'string' },
+                                                    productId: { type: 'string' },
+                                                    url: { type: 'string' },
+                                                    altText: { type: 'string' },
+                                                    sortOrder: { type: 'integer' },
+                                                    isMain: { type: 'boolean' },
+                                                    createdAt: { type: 'string', format: 'date-time' },
+                                                    updatedAt: { type: 'string', format: 'date-time' }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            }
+        },
         '/product-images/upload': {
             post: {
                 summary: 'Upload direto de imagem para produto',
@@ -1350,51 +2008,6 @@ const swaggerDefinition = {
                 }
             }
         },
-        '/product-images/product/{productId}': {
-            get: {
-                summary: 'Listar imagens de um produto',
-                tags: ['Imagens de Produtos'],
-                parameters: [
-                    {
-                        name: 'productId',
-                        in: 'path',
-                        required: true,
-                        schema: { type: 'string', format: 'uuid' },
-                        description: 'ID do produto'
-                    }
-                ],
-                responses: {
-                    '200': {
-                        description: 'Lista de imagens do produto',
-                        content: {
-                            'application/json': {
-                                schema: {
-                                    type: 'object',
-                                    properties: {
-                                        success: { type: 'boolean' },
-                                        data: {
-                                            type: 'array',
-                                            items: {
-                                                type: 'object',
-                                                properties: {
-                                                    id: { type: 'string' },
-                                                    productId: { type: 'string' },
-                                                    url: { type: 'string' },
-                                                    altText: { type: 'string' },
-                                                    sortOrder: { type: 'integer' },
-                                                    isMain: { type: 'boolean' },
-                                                    createdAt: { type: 'string', format: 'date-time' }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         '/product-images': {
             post: {
                 summary: 'Criar imagem por URL',
@@ -1424,15 +2037,68 @@ const swaggerDefinition = {
             }
         },
         '/product-images/{id}': {
-            delete: {
-                summary: 'Excluir imagem',
+            put: {
+                summary: 'Atualizar imagem',
                 tags: ['Imagens de Produtos'],
                 security: [{ bearerAuth: [] }],
                 parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID da imagem' }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    url: { type: 'string', format: 'url', description: 'Nova URL da imagem' },
+                                    altText: { type: 'string', description: 'Texto alternativo' },
+                                    sortOrder: { type: 'integer', minimum: 0, description: 'Ordem de exibição' },
+                                    isMain: { type: 'boolean', description: 'Se é a imagem principal' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Imagem atualizada com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' },
+                    '404': { description: 'Imagem não encontrada' },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            },
+            delete: {
+                summary: 'Apagar imagem',
+                tags: ['Imagens de Produtos'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID da imagem' }
                 ],
                 responses: {
-                    '200': { description: 'Imagem excluída com sucesso' }
+                    '200': { description: 'Imagem eliminada com sucesso' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' },
+                    '404': { description: 'Imagem não encontrada' },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            }
+        },
+        '/product-images/{id}/main': {
+            put: {
+                summary: 'Definir imagem como principal',
+                tags: ['Imagens de Produtos'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' }, description: 'ID da imagem' }
+                ],
+                responses: {
+                    '200': { description: 'Imagem definida como principal com sucesso' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' },
+                    '404': { description: 'Imagem não encontrada' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
@@ -1482,7 +2148,8 @@ const swaggerDefinition = {
                     { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
                 ],
                 responses: {
-                    '200': { description: 'Detalhes da coleção' }
+                    '200': { description: 'Detalhes da coleção' },
+                    '404': { description: 'Coleção não encontrada' }
                 }
             },
             put: {
@@ -1492,8 +2159,33 @@ const swaggerDefinition = {
                 parameters: [
                     { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
                 ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    name: { type: 'string' },
+                                    description: { type: 'string' },
+                                    season: { type: 'string' },
+                                    year: { type: 'integer' },
+                                    launchDate: { type: 'string', format: 'date-time' },
+                                    isActive: { type: 'boolean' },
+                                    isFeatured: { type: 'boolean' },
+                                    coverImage: { type: 'string' },
+                                    slug: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                },
                 responses: {
-                    '200': { description: 'Coleção atualizada com sucesso' }
+                    '200': { description: 'Coleção atualizada com sucesso' },
+                    '404': { description: 'Coleção não encontrada' },
+                    '409': { description: 'Nome ou slug já existe' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             },
             delete: {
@@ -1504,7 +2196,89 @@ const swaggerDefinition = {
                     { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
                 ],
                 responses: {
-                    '200': { description: 'Coleção excluída com sucesso' }
+                    '200': { description: 'Coleção excluída com sucesso' },
+                    '404': { description: 'Coleção não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/collections/{id}/toggle-featured': {
+            post: {
+                summary: 'Alternar status de destaque da coleção',
+                tags: ['Coleções'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                responses: {
+                    '200': { description: 'Status alterado' },
+                    '404': { description: 'Coleção não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/collections/{id}/products': {
+            get: {
+                summary: 'Obter produtos da coleção',
+                tags: ['Coleções'],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+                    { name: 'page', in: 'query', schema: { type: 'integer', default: 1 } },
+                    { name: 'limit', in: 'query', schema: { type: 'integer', default: 10 } }
+                ],
+                responses: {
+                    '200': { description: 'Produtos da coleção' },
+                    '404': { description: 'Coleção não encontrada' }
+                }
+            }
+        },
+        '/collections/{collectionId}/products': {
+            post: {
+                summary: 'Adicionar produto à coleção',
+                tags: ['Coleções'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'collectionId', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['productId'],
+                                properties: {
+                                    productId: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': { description: 'Produto adicionado à coleção' },
+                    '404': { description: 'Coleção ou produto não encontrado' },
+                    '409': { description: 'Produto já está na coleção' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/collections/{collectionId}/products/{productId}': {
+            delete: {
+                summary: 'Remover produto da coleção',
+                tags: ['Coleções'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'collectionId', in: 'path', required: true, schema: { type: 'string' } },
+                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                responses: {
+                    '200': { description: 'Produto removido da coleção' },
+                    '404': { description: 'Produto não está na coleção' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             }
         },
@@ -1519,7 +2293,10 @@ const swaggerDefinition = {
                     { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
                 ],
                 responses: {
-                    '200': { description: 'Detalhes do fornecedor' }
+                    '200': { description: 'Detalhes do fornecedor' },
+                    '404': { description: 'Fornecedor não encontrado' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             },
             put: {
@@ -1529,8 +2306,38 @@ const swaggerDefinition = {
                 parameters: [
                     { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
                 ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    name: { type: 'string' },
+                                    contactName: { type: 'string' },
+                                    email: { type: 'string', format: 'email' },
+                                    phone: { type: 'string' },
+                                    address: { type: 'string' },
+                                    city: { type: 'string' },
+                                    country: { type: 'string' },
+                                    postalCode: { type: 'string' },
+                                    taxNumber: { type: 'string' },
+                                    website: { type: 'string', format: 'uri' },
+                                    notes: { type: 'string' },
+                                    isActive: { type: 'boolean' },
+                                    paymentTerms: { type: 'string' },
+                                    currency: { type: 'string', minLength: 3, maxLength: 3 }
+                                }
+                            }
+                        }
+                    }
+                },
                 responses: {
-                    '200': { description: 'Fornecedor atualizado com sucesso' }
+                    '200': { description: 'Fornecedor atualizado com sucesso' },
+                    '404': { description: 'Fornecedor não encontrado' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             },
             delete: {
@@ -1541,7 +2348,27 @@ const swaggerDefinition = {
                     { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
                 ],
                 responses: {
-                    '200': { description: 'Fornecedor excluído com sucesso' }
+                    '200': { description: 'Fornecedor excluído com sucesso' },
+                    '404': { description: 'Fornecedor não encontrado' },
+                    '400': { description: 'Fornecedor tem encomendas ativas' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/suppliers/{id}/toggle-status': {
+            post: {
+                summary: 'Alternar status do fornecedor',
+                tags: ['Fornecedores'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                responses: {
+                    '200': { description: 'Status alterado' },
+                    '404': { description: 'Fornecedor não encontrado' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             }
         },
@@ -1549,47 +2376,179 @@ const swaggerDefinition = {
         // === PEDIDOS DE FORNECEDORES EXPANDIDO ===
         '/supplier-orders/{id}': {
             get: {
-                summary: 'Obter pedido de fornecedor por ID',
+                summary: 'Obter encomenda por ID',
                 tags: ['Pedidos de Fornecedores'],
                 security: [{ bearerAuth: [] }],
                 parameters: [
                     { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
                 ],
                 responses: {
-                    '200': { description: 'Detalhes do pedido de fornecedor' }
+                    '200': { description: 'Detalhes da encomenda' },
+                    '404': { description: 'Encomenda não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             },
             put: {
-                summary: 'Atualizar pedido de fornecedor',
+                summary: 'Atualizar encomenda',
+                tags: ['Pedidos de Fornecedores'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    status: { type: 'string', enum: ['PENDENTE', 'ENVIADA', 'RECEBIDA', 'CANCELADA'] },
+                                    expectedDate: { type: 'string', format: 'date-time' },
+                                    receivedDate: { type: 'string', format: 'date-time' },
+                                    notes: { type: 'string' },
+                                    invoiceNumber: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Encomenda atualizada' },
+                    '404': { description: 'Encomenda não encontrada' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            },
+            delete: {
+                summary: 'Deletar encomenda',
                 tags: ['Pedidos de Fornecedores'],
                 security: [{ bearerAuth: [] }],
                 parameters: [
                     { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
                 ],
                 responses: {
-                    '200': { description: 'Pedido atualizado com sucesso' }
+                    '200': { description: 'Encomenda deletada' },
+                    '404': { description: 'Encomenda não encontrada' },
+                    '400': { description: 'Não é possível deletar encomenda que não está pendente' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/supplier-orders/{id}/mark-sent': {
+            post: {
+                summary: 'Marcar encomenda como enviada',
+                tags: ['Pedidos de Fornecedores'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                responses: {
+                    '200': { description: 'Encomenda marcada como enviada' },
+                    '404': { description: 'Encomenda não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/supplier-orders/{id}/mark-received': {
+            post: {
+                summary: 'Marcar encomenda como recebida',
+                tags: ['Pedidos de Fornecedores'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                responses: {
+                    '200': { description: 'Encomenda marcada como recebida' },
+                    '404': { description: 'Encomenda não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
+                }
+            }
+        },
+        '/supplier-orders/{id}/items/{itemId}': {
+            put: {
+                summary: 'Atualizar item da encomenda',
+                tags: ['Pedidos de Fornecedores'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+                    { name: 'itemId', in: 'path', required: true, schema: { type: 'string' } }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    receivedQuantity: { type: 'integer', minimum: 0 }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Item atualizado' },
+                    '404': { description: 'Encomenda ou item não encontrado' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas Admin)' }
                 }
             }
         },
 
-        // === ESTOQUE EXPANDIDO ===
-        '/stock/product/{productId}': {
+        // === LISTA DE DESEJOS ===
+        '/wishlist': {
             get: {
-                summary: 'Consultar estoque de produto específico',
-                tags: ['Estoque'],
+                summary: 'Obter lista de desejos do utilizador',
+                tags: ['Lista de Desejos'],
                 security: [{ bearerAuth: [] }],
-                parameters: [
-                    { name: 'productId', in: 'path', required: true, schema: { type: 'string' } }
-                ],
                 responses: {
-                    '200': { description: 'Informações de estoque do produto' }
+                    '200': {
+                        description: 'Lista de desejos obtida com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'string' },
+                                                    userId: { type: 'string' },
+                                                    productId: { type: 'string' },
+                                                    product: {
+                                                        type: 'object',
+                                                        properties: {
+                                                            id: { type: 'string' },
+                                                            name: { type: 'string' },
+                                                            price: { type: 'number' },
+                                                            images: { type: 'array' }
+                                                        }
+                                                    },
+                                                    addedAt: { type: 'string', format: 'date-time' }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
-            }
-        },
-        '/stock/update': {
+            },
             post: {
-                summary: 'Atualizar estoque',
-                tags: ['Estoque'],
+                summary: 'Adicionar produto à lista de desejos',
+                tags: ['Lista de Desejos'],
                 security: [{ bearerAuth: [] }],
                 requestBody: {
                     required: true,
@@ -1597,144 +2556,79 @@ const swaggerDefinition = {
                         'application/json': {
                             schema: {
                                 type: 'object',
-                                required: ['productId', 'quantity'],
+                                required: ['productId'],
                                 properties: {
-                                    productId: { type: 'string' },
-                                    quantity: { type: 'integer' },
-                                    operation: { type: 'string', enum: ['add', 'subtract', 'set'] }
+                                    productId: { type: 'string', description: 'ID do produto a adicionar' }
                                 }
                             }
                         }
                     }
                 },
                 responses: {
-                    '200': { description: 'Estoque atualizado com sucesso' }
+                    '200': { description: 'Produto adicionado à lista de desejos com sucesso' },
+                    '400': { description: 'Dados inválidos ou produto já na lista' },
+                    '401': { description: 'Não autenticado' },
+                    '404': { description: 'Produto não encontrado' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
-
-        // === AVALIAÇÕES EXPANDIDO ===
-        '/reviews/{id}': {
-            get: {
-                summary: 'Obter avaliação por ID',
-                tags: ['Avaliações'],
-                parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Detalhes da avaliação' }
-                }
-            },
-            put: {
-                summary: 'Atualizar avaliação',
-                tags: ['Avaliações'],
-                security: [{ bearerAuth: [] }],
-                parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Avaliação atualizada com sucesso' }
-                }
-            },
+        '/wishlist/{productId}': {
             delete: {
-                summary: 'Excluir avaliação',
-                tags: ['Avaliações'],
-                security: [{ bearerAuth: [] }],
-                parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Avaliação excluída com sucesso' }
-                }
-            }
-        },
-
-        // === CUPONS EXPANDIDO ===
-        '/coupon/{id}': {
-            get: {
-                summary: 'Obter cupom por ID',
-                tags: ['Cupons'],
-                security: [{ bearerAuth: [] }],
-                parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Detalhes do cupom' }
-                }
-            },
-            put: {
-                summary: 'Atualizar cupom',
-                tags: ['Cupons'],
-                security: [{ bearerAuth: [] }],
-                parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Cupom atualizado com sucesso' }
-                }
-            },
-            delete: {
-                summary: 'Excluir cupom',
-                tags: ['Cupons'],
-                security: [{ bearerAuth: [] }],
-                parameters: [
-                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Cupom excluído com sucesso' }
-                }
-            }
-        },
-
-        // === WISHLIST ===
-        '/wishlist': {
-            get: {
-                summary: 'Obter lista de desejos',
+                summary: 'Remover produto da lista de desejos',
                 tags: ['Lista de Desejos'],
                 security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'productId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                        description: 'ID do produto a ser removido'
+                    }
+                ],
                 responses: {
-                    '200': { description: 'Lista de desejos do usuário' }
+                    '200': { description: 'Produto removido da lista de desejos com sucesso' },
+                    '400': { description: 'ID do produto inválido' },
+                    '401': { description: 'Não autenticado' },
+                    '404': { description: 'Produto não encontrado na lista de desejos' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
-            },
+            }
+        },
+        '/wishlist/move-to-cart': {
             post: {
-                summary: 'Adicionar à lista de desejos',
+                summary: 'Mover item da lista de desejos para o carrinho',
                 tags: ['Lista de Desejos'],
                 security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['productId'],
+                                properties: {
+                                    productId: { type: 'string', description: 'ID do produto a mover para o carrinho' }
+                                }
+                            }
+                        }
+                    }
+                },
                 responses: {
-                    '200': { description: 'Item adicionado à lista de desejos' }
+                    '200': { description: 'Item movido para o carrinho com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '404': { description: 'Produto não encontrado na lista de desejos' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
 
         // === UPLOAD ===
-        '/upload': {
-            post: {
-                summary: 'Upload de arquivo',
-                tags: ['Upload'],
-                security: [{ bearerAuth: [] }],
-                requestBody: {
-                    content: {
-                        'multipart/form-data': {
-                            schema: {
-                                type: 'object',
-                                properties: {
-                                    file: {
-                                        type: 'string',
-                                        format: 'binary'
-                                    }
-                                }
-                            }
-                        }
-                    }
-                },
-                responses: {
-                    '200': { description: 'Arquivo enviado com sucesso' }
-                }
-            }
-        },
         '/upload/proof': {
             post: {
-                summary: 'Upload de comprovativo de pagamento/licença (imagem/PDF)',
+                summary: 'Upload de comprovativo de pagamento/licença',
                 tags: ['Upload'],
                 security: [{ bearerAuth: [] }],
                 requestBody: {
@@ -1743,10 +2637,12 @@ const swaggerDefinition = {
                         'multipart/form-data': {
                             schema: {
                                 type: 'object',
+                                required: ['file'],
                                 properties: {
                                     file: {
                                         type: 'string',
-                                        format: 'binary'
+                                        format: 'binary',
+                                        description: 'Ficheiro de comprovativo (imagem: JPEG/PNG ou PDF - máx 5MB)'
                                     }
                                 }
                             }
@@ -1754,80 +2650,291 @@ const swaggerDefinition = {
                     }
                 },
                 responses: {
-                    '200': { description: 'Comprovativo enviado com sucesso!' },
-                    '400': { description: 'Nenhum ficheiro enviado ou formato inválido' },
-                    '401': { description: 'Não autenticado (token JWT obrigatório)' }
-                }
-            }
-        },
-
-        // === MOEDAS ===
-        '/currency': {
-            get: {
-                summary: 'Listar moedas',
-                tags: ['Moedas'],
-                responses: {
-                    '200': { description: 'Lista de moedas suportadas' }
-                }
-            }
-        },
-        '/currency/convert': {
-            get: {
-                summary: 'Converter preço entre moedas (EUR/USD/BRL)',
-                tags: ['Currency'],
-                parameters: [
-                    {
-                        name: 'amount',
-                        in: 'query',
-                        required: true,
-                        schema: { type: 'number' },
-                        description: 'Valor a converter'
-                    },
-                    {
-                        name: 'from',
-                        in: 'query',
-                        required: true,
-                        schema: { type: 'string' },
-                        description: 'Moeda de origem (EUR, USD, BRL)'
-                    },
-                    {
-                        name: 'to',
-                        in: 'query',
-                        required: true,
-                        schema: { type: 'string' },
-                        description: 'Moeda de destino (EUR, USD, BRL)'
-                    }
-                ],
-                responses: {
                     '200': {
-                        description: 'Valor convertido e taxa de câmbio',
+                        description: 'Comprovativo enviado com sucesso',
                         content: {
                             'application/json': {
                                 schema: {
                                     type: 'object',
                                     properties: {
-                                        converted: { type: 'number', example: 10.75 },
-                                        rate: { type: 'number', example: 1.075 },
-                                        from: { type: 'string', example: 'EUR' },
-                                        to: { type: 'string', example: 'USD' }
+                                        message: { type: 'string', description: 'Mensagem de sucesso' },
+                                        fileUrl: { type: 'string', description: 'URL relativa do ficheiro carregado' }
                                     }
                                 }
                             }
                         }
                     },
-                    '400': { description: 'Parâmetros em falta ou inválidos' }
+                    '400': { description: 'Nenhum ficheiro enviado, formato inválido ou ficheiro muito grande' },
+                    '401': { description: 'Não autenticado (token JWT obrigatório)' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
 
         // === PERMISSÕES ===
-        '/api/permissions': {
+        '/api/admin/permissions': {
             get: {
                 summary: 'Listar permissões',
                 tags: ['Permissões'],
                 security: [{ bearerAuth: [] }],
                 responses: {
-                    '200': { description: 'Lista de permissões' }
+                    '200': {
+                        description: 'Lista de permissões',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'string' },
+                                            name: { type: 'string', example: 'EDIT_PRODUCTS' },
+                                            createdAt: { type: 'string', format: 'date-time' },
+                                            updatedAt: { type: 'string', format: 'date-time' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' }
+                }
+            },
+            post: {
+                summary: 'Criar permissão',
+                tags: ['Permissões'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['name'],
+                                properties: {
+                                    name: {
+                                        type: 'string',
+                                        description: 'Nome da permissão',
+                                        example: 'EDIT_PRODUCTS'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Permissão criada com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string' },
+                                        name: { type: 'string' },
+                                        createdAt: { type: 'string', format: 'date-time' },
+                                        updatedAt: { type: 'string', format: 'date-time' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' }
+                }
+            }
+        },
+        '/api/admin/groups': {
+            get: {
+                summary: 'Listar grupos de utilizadores',
+                tags: ['Grupos'],
+                security: [{ bearerAuth: [] }],
+                responses: {
+                    '200': {
+                        description: 'Lista de grupos',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'string' },
+                                            name: { type: 'string', example: 'Admins' },
+                                            createdAt: { type: 'string', format: 'date-time' },
+                                            updatedAt: { type: 'string', format: 'date-time' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' }
+                }
+            },
+            post: {
+                summary: 'Criar grupo de utilizadores',
+                tags: ['Grupos'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['name'],
+                                properties: {
+                                    name: {
+                                        type: 'string',
+                                        description: 'Nome do grupo',
+                                        example: 'Admins'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Grupo criado com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string' },
+                                        name: { type: 'string' },
+                                        createdAt: { type: 'string', format: 'date-time' },
+                                        updatedAt: { type: 'string', format: 'date-time' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' }
+                }
+            }
+        },
+        '/api/admin/permissions/add-to-user': {
+            post: {
+                summary: 'Associar permissão a utilizador',
+                tags: ['Permissões'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['userId', 'permissionId'],
+                                properties: {
+                                    userId: {
+                                        type: 'string',
+                                        description: 'ID do utilizador',
+                                        example: 'clx123abc'
+                                    },
+                                    permissionId: {
+                                        type: 'string',
+                                        description: 'ID da permissão',
+                                        example: 'perm456def'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': {
+                        description: 'Permissão associada ao utilizador com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string' },
+                                        email: { type: 'string' },
+                                        permissions: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'string' },
+                                                    name: { type: 'string' }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' },
+                    '404': { description: 'Utilizador ou permissão não encontrado' }
+                }
+            }
+        },
+        '/api/admin/groups/add-user': {
+            post: {
+                summary: 'Associar utilizador a grupo',
+                tags: ['Grupos'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['userId', 'groupId'],
+                                properties: {
+                                    userId: {
+                                        type: 'string',
+                                        description: 'ID do utilizador',
+                                        example: 'clx123abc'
+                                    },
+                                    groupId: {
+                                        type: 'string',
+                                        description: 'ID do grupo',
+                                        example: 'group789xyz'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': {
+                        description: 'Utilizador associado ao grupo com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string' },
+                                        email: { type: 'string' },
+                                        groupId: { type: 'string' },
+                                        group: {
+                                            type: 'object',
+                                            properties: {
+                                                id: { type: 'string' },
+                                                name: { type: 'string' }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' },
+                    '404': { description: 'Utilizador ou grupo não encontrado' }
                 }
             }
         },
@@ -1837,59 +2944,465 @@ const swaggerDefinition = {
             get: {
                 summary: 'Listar guias de tamanho',
                 tags: ['Guias de Tamanho'],
+                parameters: [
+                    {
+                        name: 'categoryId',
+                        in: 'query',
+                        required: false,
+                        schema: { type: 'string', format: 'uuid' },
+                        description: 'Filtrar por categoria específica'
+                    }
+                ],
                 responses: {
-                    '200': { description: 'Lista de guias de tamanho' }
+                    '200': {
+                        description: 'Lista de guias de tamanho',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'string' },
+                                                    name: { type: 'string', example: 'Guia Feminino Adulto' },
+                                                    categoryId: { type: 'string' },
+                                                    sizes: {
+                                                        type: 'object',
+                                                        example: {
+                                                            'XS': { bust: 82, waist: 64, hip: 90 },
+                                                            'S': { bust: 86, waist: 68, hip: 94 }
+                                                        }
+                                                    },
+                                                    unit: { type: 'string', example: 'cm' },
+                                                    notes: { type: 'string' },
+                                                    category: {
+                                                        type: 'object',
+                                                        properties: {
+                                                            id: { type: 'string' },
+                                                            name: { type: 'string' }
+                                                        }
+                                                    },
+                                                    createdAt: { type: 'string', format: 'date-time' },
+                                                    updatedAt: { type: 'string', format: 'date-time' }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             },
             post: {
                 summary: 'Criar guia de tamanho',
                 tags: ['Guias de Tamanho'],
                 security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['categoryId', 'name', 'sizes'],
+                                properties: {
+                                    categoryId: {
+                                        type: 'string',
+                                        format: 'uuid',
+                                        description: 'ID da categoria'
+                                    },
+                                    name: {
+                                        type: 'string',
+                                        description: 'Nome do guia',
+                                        example: 'Guia Feminino Adulto'
+                                    },
+                                    sizes: {
+                                        type: 'object',
+                                        description: 'Tamanhos e medidas',
+                                        example: {
+                                            'XS': { bust: 82, waist: 64, hip: 90 },
+                                            'S': { bust: 86, waist: 68, hip: 94 },
+                                            'M': { bust: 90, waist: 72, hip: 98 }
+                                        }
+                                    },
+                                    unit: {
+                                        type: 'string',
+                                        default: 'cm',
+                                        description: 'Unidade de medida'
+                                    },
+                                    notes: {
+                                        type: 'string',
+                                        description: 'Notas adicionais'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
                 responses: {
-                    '201': { description: 'Guia criado com sucesso' }
+                    '201': {
+                        description: 'Guia criado com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'object',
+                                            properties: {
+                                                id: { type: 'string' },
+                                                name: { type: 'string' },
+                                                categoryId: { type: 'string' },
+                                                sizes: { type: 'object' },
+                                                unit: { type: 'string' },
+                                                notes: { type: 'string' },
+                                                createdAt: { type: 'string', format: 'date-time' },
+                                                updatedAt: { type: 'string', format: 'date-time' }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos ou guia duplicado' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' },
+                    '404': { description: 'Categoria não encontrada' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
-
-        // === FILTROS ===
-        '/filter': {
+        '/size-guides/{id}': {
             get: {
-                summary: 'Obter filtros disponíveis',
-                tags: ['Filtros'],
+                summary: 'Obter guia de tamanho por ID',
+                tags: ['Guias de Tamanho'],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                        description: 'ID do guia de tamanho'
+                    }
+                ],
                 responses: {
-                    '200': { description: 'Filtros disponíveis para produtos' }
+                    '200': {
+                        description: 'Guia de tamanho encontrado',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'object',
+                                            properties: {
+                                                id: { type: 'string' },
+                                                name: { type: 'string' },
+                                                categoryId: { type: 'string' },
+                                                sizes: { type: 'object' },
+                                                unit: { type: 'string' },
+                                                notes: { type: 'string' },
+                                                category: {
+                                                    type: 'object',
+                                                    properties: {
+                                                        id: { type: 'string' },
+                                                        name: { type: 'string' }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '404': { description: 'Guia de tamanhos não encontrado' },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            },
+            put: {
+                summary: 'Atualizar guia de tamanho',
+                tags: ['Guias de Tamanho'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                        description: 'ID do guia de tamanho'
+                    }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    name: {
+                                        type: 'string',
+                                        description: 'Nome do guia'
+                                    },
+                                    sizes: {
+                                        type: 'object',
+                                        description: 'Tamanhos e medidas atualizadas'
+                                    },
+                                    unit: {
+                                        type: 'string',
+                                        description: 'Unidade de medida'
+                                    },
+                                    notes: {
+                                        type: 'string',
+                                        description: 'Notas adicionais'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': {
+                        description: 'Guia atualizado com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: { type: 'object' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos ou nome duplicado' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' },
+                    '404': { description: 'Guia não encontrado' },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            },
+            delete: {
+                summary: 'Eliminar guia de tamanho',
+                tags: ['Guias de Tamanho'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                        description: 'ID do guia de tamanho'
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Guia eliminado com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        message: { type: 'string' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' },
+                    '404': { description: 'Guia não encontrado' },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            }
+        },
+        '/size-guides/category/{categoryId}': {
+            get: {
+                summary: 'Obter guias de tamanho por categoria',
+                tags: ['Guias de Tamanho'],
+                parameters: [
+                    {
+                        name: 'categoryId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string', format: 'uuid' },
+                        description: 'ID da categoria'
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Guias de tamanho da categoria',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: { type: 'object' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            }
+        },
+        '/size-guides/recommendation/{categoryId}': {
+            get: {
+                summary: 'Obter recomendação de tamanho baseada em medidas',
+                tags: ['Guias de Tamanho'],
+                parameters: [
+                    {
+                        name: 'categoryId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string', format: 'uuid' },
+                        description: 'ID da categoria'
+                    },
+                    {
+                        name: 'bust',
+                        in: 'query',
+                        required: false,
+                        schema: { type: 'number' },
+                        description: 'Medida do busto em cm'
+                    },
+                    {
+                        name: 'waist',
+                        in: 'query',
+                        required: false,
+                        schema: { type: 'number' },
+                        description: 'Medida da cintura em cm'
+                    },
+                    {
+                        name: 'hip',
+                        in: 'query',
+                        required: false,
+                        schema: { type: 'number' },
+                        description: 'Medida da anca em cm'
+                    },
+                    {
+                        name: 'chest',
+                        in: 'query',
+                        required: false,
+                        schema: { type: 'number' },
+                        description: 'Medida do peito em cm'
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Recomendações de tamanho',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    guideId: { type: 'string' },
+                                                    guideName: { type: 'string' },
+                                                    recommendedSize: { type: 'string', example: 'M' },
+                                                    confidence: { type: 'number', example: 85.5 }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Pelo menos uma medida é obrigatória' },
+                    '404': { description: 'Nenhum guia encontrado para esta categoria' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
 
         // === FATURAS ===
-        '/invoice': {
+        '/invoices/{id}': {
             get: {
-                summary: 'Listar faturas',
+                summary: 'Download de fatura específica',
                 tags: ['Faturas'],
                 security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                        description: 'ID da fatura/pedido'
+                    }
+                ],
                 responses: {
-                    '200': { description: 'Lista de faturas' }
-                }
-            },
-            post: {
-                summary: 'Gerar fatura',
-                tags: ['Faturas'],
-                security: [{ bearerAuth: [] }],
-                responses: {
-                    '201': { description: 'Fatura gerada com sucesso' }
+                    '200': {
+                        description: 'Fatura baixada com sucesso',
+                        content: {
+                            'application/pdf': {
+                                schema: {
+                                    type: 'string',
+                                    format: 'binary',
+                                    description: 'Ficheiro PDF da fatura'
+                                }
+                            }
+                        },
+                        headers: {
+                            'Content-Disposition': {
+                                description: 'Nome do ficheiro para download',
+                                schema: { type: 'string', example: 'attachment; filename="invoice_123.pdf"' }
+                            }
+                        }
+                    },
+                    '400': { description: 'ID da fatura inválido' },
+                    '401': { description: 'Não autenticado' },
+                    '404': { description: 'Fatura não encontrada' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
-
-        // === LICENÇAS ===
-        '/license': {
+        '/invoices/download/all': {
             get: {
-                summary: 'Listar licenças',
-                tags: ['Licenças'],
+                summary: 'Download de todas as faturas do utilizador',
+                tags: ['Faturas'],
                 security: [{ bearerAuth: [] }],
                 responses: {
-                    '200': { description: 'Lista de licenças' }
+                    '200': {
+                        description: 'Todas as faturas baixadas em ZIP',
+                        content: {
+                            'application/zip': {
+                                schema: {
+                                    type: 'string',
+                                    format: 'binary',
+                                    description: 'Ficheiro ZIP com todas as faturas'
+                                }
+                            }
+                        },
+                        headers: {
+                            'Content-Disposition': {
+                                description: 'Nome do ficheiro ZIP',
+                                schema: { type: 'string', example: 'attachment; filename="meus_ficheiros.zip"' }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '404': { description: 'Nenhuma fatura encontrada para este utilizador' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
@@ -1897,11 +3410,128 @@ const swaggerDefinition = {
         // === AUDITORIA ===
         '/admin/audit-logs': {
             get: {
-                summary: 'Logs de auditoria',
+                summary: 'Obter todos os logs de auditoria do sistema',
+                tags: ['Auditoria'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'take',
+                        in: 'query',
+                        required: false,
+                        schema: { type: 'integer', default: 50, minimum: 1, maximum: 100 },
+                        description: 'Número máximo de logs a retornar'
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Lista de logs de auditoria obtida com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'string' },
+                                            userId: { type: 'string' },
+                                            action: { type: 'string', example: 'CREATE' },
+                                            entity: { type: 'string', example: 'Product' },
+                                            entityId: { type: 'string' },
+                                            createdAt: { type: 'string', format: 'date-time' },
+                                            user: {
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'string' },
+                                                    email: { type: 'string' },
+                                                    name: { type: 'string' },
+                                                    role: { type: 'string' }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            }
+        },
+        '/admin/audit-logs/user': {
+            get: {
+                summary: 'Obter logs de auditoria do utilizador autenticado',
                 tags: ['Auditoria'],
                 security: [{ bearerAuth: [] }],
                 responses: {
-                    '200': { description: 'Logs de auditoria do sistema' }
+                    '200': {
+                        description: 'Logs de auditoria do utilizador obtidos com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'string' },
+                                            userId: { type: 'string' },
+                                            action: { type: 'string', example: 'UPDATE' },
+                                            entity: { type: 'string', example: 'Order' },
+                                            entityId: { type: 'string' },
+                                            createdAt: { type: 'string', format: 'date-time' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '500': { description: 'Erro interno do servidor' }
+                }
+            }
+        },
+        '/admin/audit-logs/user/{userId}': {
+            get: {
+                summary: 'Obter logs de auditoria de utilizador específico (Admin)',
+                tags: ['Auditoria'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'userId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' },
+                        description: 'ID do utilizador'
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Logs de auditoria do utilizador obtidos com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            id: { type: 'string' },
+                                            userId: { type: 'string' },
+                                            action: { type: 'string', example: 'DELETE' },
+                                            entity: { type: 'string', example: 'Review' },
+                                            entityId: { type: 'string' },
+                                            createdAt: { type: 'string', format: 'date-time' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'ID de utilizador inválido' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão (apenas ADMIN)' },
+                    '404': { description: 'Utilizador não encontrado' },
+                    '500': { description: 'Erro interno do servidor' }
                 }
             }
         },
@@ -2268,87 +3898,6 @@ const swaggerDefinition = {
                         }
                     },
                     '400': { description: 'Termo de pesquisa deve ter pelo menos 2 caracteres' }
-                }
-            }
-        },
-
-        // === WISHLIST MISSING ENDPOINTS ===
-        '/wishlist/{productId}': {
-            delete: {
-                summary: 'Remover produto da lista de desejos',
-                tags: ['Wishlist'],
-                security: [{ bearerAuth: [] }],
-                parameters: [
-                    {
-                        name: 'productId',
-                        in: 'path',
-                        required: true,
-                        schema: { type: 'string' },
-                        description: 'ID do produto a ser removido'
-                    }
-                ],
-                responses: {
-                    '200': { description: 'Produto removido da lista de desejos com sucesso' },
-                    '401': { description: 'Não autenticado' },
-                    '404': { description: 'Produto não encontrado na lista de desejos' }
-                }
-            }
-        },
-        '/wishlist/move-to-cart': {
-            post: {
-                summary: 'Mover item da lista de desejos para o carrinho',
-                tags: ['Wishlist'],
-                security: [{ bearerAuth: [] }],
-                requestBody: {
-                    required: true,
-                    content: {
-                        'application/json': {
-                            schema: {
-                                type: 'object',
-                                required: ['productId'],
-                                properties: {
-                                    productId: { type: 'string', example: 'clx123' }
-                                }
-                            }
-                        }
-                    }
-                },
-                responses: {
-                    '200': { description: 'Item movido para o carrinho com sucesso' },
-                    '401': { description: 'Não autenticado' },
-                    '404': { description: 'Produto não encontrado na lista de desejos' }
-                }
-            }
-        },
-
-        // === USER ENDPOINTS (MISSING) ===
-        '/user/export': {
-            get: {
-                summary: 'Exportar todos os dados do utilizador autenticado (GDPR)',
-                tags: ['User'],
-                security: [{ bearerAuth: [] }],
-                responses: {
-                    '200': {
-                        description: 'Dados exportados em JSON',
-                        content: {
-                            'application/json': {
-                                schema: {
-                                    type: 'object',
-                                    example: {
-                                        id: 'clx123',
-                                        email: 'user@email.com',
-                                        name: 'Utilizador Exemplo',
-                                        licenses: [],
-                                        orders: [],
-                                        auditLogs: [],
-                                        reviews: [],
-                                        wishlist: []
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    '401': { description: 'Não autenticado (token JWT obrigatório)' }
                 }
             }
         },

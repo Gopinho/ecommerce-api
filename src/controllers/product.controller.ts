@@ -214,7 +214,9 @@ export async function updateProduct(req: AuthenticatedRequest, res: Response, ne
                 variants: true,
                 images: true
             }
-        }); await logAction(userId, 'UPDATE', 'Product', id);
+        });
+
+        await logAction(userId, 'UPDATE', 'Product', id);
 
         res.json(product);
     } catch (err) {

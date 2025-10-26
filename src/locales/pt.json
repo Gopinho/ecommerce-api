@@ -1,145 +1,136 @@
 {
-	"auth": {
-		"register_success": "Utilizador registado com sucesso.",
-		"login_success": "Login efetuado com sucesso.",
-		"invalid_credentials": "Credenciais inválidas.",
-		"token_required": "Token obrigatório.",
-		"logout_success": "Logout feito com sucesso.",
-		"user_not_found": "Utilizador não encontrado.",
-		"not_authenticated": "Não autenticado.",
-		"access_denied": "Acesso negado.",
-		"email_in_use": "Email já está em uso.",
-		"new_email_required": "Novo email é obrigatório.",
-		"email_changed_success": "Email alterado com sucesso.",
-		"too_many_attempts": "Muitas tentativas. Tenta novamente daqui a 15 minutos."
-	},
-	"cart": {
-		"invalid_data": "Dados inválidos.",
-		"invalid_quantity": "Quantidade inválida.",
-		"item_not_found": "Item não encontrado.",
-		"item_removed": "Item removido."
-	},
-	"token": {
-		"invalid": "Token inválido ou expirado.",
-		"required": "Token não fornecido."
-	},
-	"coupon": {
-		"not_found": "Cupom não encontrado.",
-		"limit_reached": "Cupom já atingiu o limite de uso.",
-		"expired": "Cupom expirado",
-		"min_order_value": "Valor mínimo da encomenda não atingido"
-	},
-	"2fa": {
-		"required": "Token 2FA obrigatório.",
-		"invalid_code": "Código inválido ou expirado.",
-		"activated": "Token 2FA ativado com sucesso.",
-		"deactivated": "Token 2FA desativado com sucesso.",
-		"invalid_2fa_token": "Token 2FA inválido.",
-		"no_setup": "Token 2FA não configurado.",
-		"not_enabled": "Token 2FA não está ativo."
-	},
-	"product": {
-		"invalid_data": "Dados inválidos.",
-		"not_found": "Produto não encontrado.",
-		"created": "Produto criado com sucesso.",
-		"updated": "Produto atualizado com sucesso.",
-		"deleted": "Produto apagado com sucesso.",
-		"error_delete": "Erro ao apagar produto.",
-		"error_create": "Erro ao criar produto.",
-		"error_fetch": "Erro ao procurar pelo produto.",
-		"error_update": "Erro ao atualizar produto.",
-		"added_wishlist": "Produto adicionado à lista de desejos.",
-		"removed_wishlist": "Produto removido da lista de desejos.",
-		"wishlist_to_cart": "Produto movido da lista de desejos para o carrinho."
-	},
-	"category": {
-		"name_required": "Nome obrigatório.",
-		"creation_error": "Erro ao criar a categoria.",
-		"fetch_error": "Erro ao pesquisar.",
-		"update_error": "Erro ao atualizar a categoria.",
-		"foreign_key_error": "Não podes apagar uma categoria que tem produtos associados.",
-		"deletion_error": "Erro ao apagar categoria.",
-		"created": "Categoria criada com sucesso.",
-		"updated": "Categoria atualizada com sucesso.",
-		"deleted": "Categoria apagada com sucesso.",
-		"not_found": "Categoria não encontrada."
-	},
-	"review": {
-		"not_found": "Avaliação não encontrada.",
-		"invalid_rating": "Avaliação inválida."
-	},
-	"checkout": {
-		"empty_cart": "Carrinho vazio."
-	},
-	"license": {
-		"renewed": "Licença renovada.",
-		"revoked": "Licença revogada.",
-		"expired": "Licença expirada.",
-		"missing_params": "Faltam parâmetros.",
-		"not_found": "Licença ou ficheiro não encontrado.",
-		"invalid": "Licença inválida.",
-		"invalid_for_product": "Licença não válida para este produto."
-	},
-	"invoice": {
-		"order_not_found": "Encomenda não encontrada",
-		"no_file": "Nenhum ficheiro enviado.",
-		"invalid_format": "Apenas imagens ou PDF são permitidos."
-	},
-	"upload": {
-		"success": "Comprovativo enviado com sucesso!",
-		"no_file": "Nenhum ficheiro enviado.",
-		"invalid_format": "Apenas imagens ou PDF são permitidos."
-	},
-	"audit": {
-		"list_success": "Lista de logs de auditoria.",
-		"not_found": "Log de auditoria não encontrado."
-	},
-	"webhook": {
-		"processing_error": "Erro ao processar o webhook.",
-		"not_found": "Webhook não encontrado."
-	},
-	"user": {
-		"data_exported": "Dados exportados com sucesso.",
-		"not_found": "Utilizador não encontrado.",
-		"no_files_found": "Nenhum ficheiro encontrado."
-	},
-	"permission": {
-		"invalid_name": "Nome de permissão inválido.",
-		"invalid_data": "Dados de permissão inválidos.",
-		"created": "Permissão criada com sucesso.",
-		"not_found": "Permissão não encontrada."
-	},
-	"group": {
-		"created": "Grupo criado com sucesso.",
-		"not_found": "Grupo não encontrado."
-	},
-	"admin": {
-		"invalid_query": "Parâmetros de consulta inválidos."
-	},
-	"common": {
-		"internal_error": "Erro interno do servidor.",
-		"unauthorized": "Acesso não autorizado.",
-		"forbidden": "Permissão negada."
-	},
-	"currency": {
-		"invalid_pair": "Par de moedas inválido ou não suportado.",
-		"missing_params": "Parâmetros obrigatórios em falta: amount, from, to."
-	},
-	"Request failed with status code 404": "Request failed with status code 404",
-	"validation": {
-		"error": "validation.error"
-	},
-	"Erro de teste para Telegram": "Erro de teste para Telegram",
-	"connect ECONNREFUSED 127": {
-		"0": {
-			"0": {
-				"1": "587"
-			}
-		}
-	},
-	"\nInvalid `prisma": {
-		"user": {
-			"findUnique()` invocation in\nC": "\\Users\\gopin\\Desktop\\api\\src\\services\\auth.service.ts:32:34\n\n  29 }\n  30 \n  31 export async function login(email: string, password: string, token2FA?: string) {\n→ 32   const user = await prisma.user.findUnique(\nAuthentication failed against database server, the provided database credentials for `root` are not valid.\n\nPlease make sure to provide valid database credentials for the database server at the configured address."
-		}
-	}
+    "auth": {
+        "register_success": "Utilizador registado com sucesso.",
+        "login_success": "Login efetuado com sucesso.",
+        "invalid_credentials": "Credenciais inválidas.",
+        "token_required": "Token obrigatório.",
+        "logout_success": "Logout feito com sucesso.",
+        "user_not_found": "Utilizador não encontrado.",
+        "not_authenticated": "Não autenticado.",
+        "access_denied": "Acesso negado.",
+        "email_in_use": "Email já está em uso.",
+        "new_email_required": "Novo email é obrigatório.",
+        "email_changed_success": "Email alterado com sucesso.",
+        "too_many_attempts": "Muitas tentativas. Tenta novamente daqui a 15 minutos."
+    },
+    "cart": {
+        "invalid_data": "Dados inválidos.",
+        "invalid_quantity": "Quantidade inválida.",
+        "item_not_found": "Item não encontrado.",
+        "item_removed": "Item removido."
+    },
+    "token": {
+        "invalid": "Token inválido ou expirado.",
+        "required": "Token não fornecido."
+    },
+    "coupon": {
+        "not_found": "Cupom não encontrado.",
+        "limit_reached": "Cupom já atingiu o limite de uso.",
+        "expired": "Cupom expirado",
+        "min_order_value": "Valor mínimo da encomenda não atingido"
+    },
+    "2fa": {
+        "required": "Token 2FA obrigatório.",
+        "invalid_code": "Código inválido ou expirado.",
+        "activated": "Token 2FA ativado com sucesso.",
+        "deactivated": "Token 2FA desativado com sucesso.",
+        "invalid_2fa_token": "Token 2FA inválido.",
+        "no_setup": "Token 2FA não configurado.",
+        "not_enabled": "Token 2FA não está ativo."
+    },
+    "product": {
+        "invalid_data": "Dados inválidos.",
+        "not_found": "Produto não encontrado.",
+        "created": "Produto criado com sucesso.",
+        "updated": "Produto atualizado com sucesso.",
+        "deleted": "Produto apagado com sucesso.",
+        "error_delete": "Erro ao apagar produto.",
+        "error_create": "Erro ao criar produto.",
+        "error_fetch": "Erro ao procurar pelo produto.",
+        "error_update": "Erro ao atualizar produto.",
+        "added_wishlist": "Produto adicionado à lista de desejos.",
+        "removed_wishlist": "Produto removido da lista de desejos.",
+        "wishlist_to_cart": "Produto movido da lista de desejos para o carrinho."
+    },
+    "category": {
+        "name_required": "Nome obrigatório.",
+        "creation_error": "Erro ao criar a categoria.",
+        "fetch_error": "Erro ao pesquisar.",
+        "update_error": "Erro ao atualizar a categoria.",
+        "foreign_key_error": "Não podes apagar uma categoria que tem produtos associados.",
+        "deletion_error": "Erro ao apagar categoria.",
+        "created": "Categoria criada com sucesso.",
+        "updated": "Categoria atualizada com sucesso.",
+        "deleted": "Categoria apagada com sucesso.",
+        "not_found": "Categoria não encontrada."
+    },
+    "review": {
+        "not_found": "Avaliação não encontrada.",
+        "invalid_rating": "Avaliação inválida."
+    },
+    "checkout": {
+        "empty_cart": "Carrinho vazio."
+    },
+    "invoice": {
+        "order_not_found": "Encomenda não encontrada",
+        "no_file": "Nenhum ficheiro enviado.",
+        "invalid_format": "Apenas imagens ou PDF são permitidos."
+    },
+    "upload": {
+        "success": "Comprovativo enviado com sucesso!",
+        "no_file": "Nenhum ficheiro enviado.",
+        "invalid_format": "Apenas imagens ou PDF são permitidos."
+    },
+    "audit": {
+        "list_success": "Lista de logs de auditoria.",
+        "not_found": "Log de auditoria não encontrado."
+    },
+    "webhook": {
+        "processing_error": "Erro ao processar o webhook.",
+        "not_found": "Webhook não encontrado."
+    },
+    "user": {
+        "data_exported": "Dados exportados com sucesso.",
+        "not_found": "Utilizador não encontrado.",
+        "no_files_found": "Nenhum ficheiro encontrado."
+    },
+    "permission": {
+        "invalid_name": "Nome de permissão inválido.",
+        "invalid_data": "Dados de permissão inválidos.",
+        "created": "Permissão criada com sucesso.",
+        "not_found": "Permissão não encontrada."
+    },
+    "group": {
+        "created": "Grupo criado com sucesso.",
+        "not_found": "Grupo não encontrado."
+    },
+    "admin": {
+        "invalid_query": "Parâmetros de consulta inválidos."
+    },
+    "common": {
+        "internal_error": "Erro interno do servidor.",
+        "unauthorized": "Acesso não autorizado.",
+        "forbidden": "Permissão negada."
+    },
+    "currency": {
+        "invalid_pair": "Par de moedas inválido ou não suportado.",
+        "missing_params": "Parâmetros obrigatórios em falta: amount, from, to."
+    },
+    "Request failed with status code 404": "Request failed with status code 404",
+    "validation": {
+        "error": "validation.error"
+    },
+    "Erro de teste para Telegram": "Erro de teste para Telegram",
+    "connect ECONNREFUSED 127": {
+        "0": {
+            "0": {
+                "1": "587"
+            }
+        }
+    },
+    "\nInvalid `prisma": {
+        "user": {
+            "findUnique()` invocation in\nC": "\\Users\\gopin\\Desktop\\api\\src\\services\\auth.service.ts:32:34\n\n  29 }\n  30 \n  31 export async function login(email: string, password: string, token2FA?: string) {\n→ 32   const user = await prisma.user.findUnique(\nAuthentication failed against database server, the provided database credentials for `root` are not valid.\n\nPlease make sure to provide valid database credentials for the database server at the configured address."
+        }
+    }
 }

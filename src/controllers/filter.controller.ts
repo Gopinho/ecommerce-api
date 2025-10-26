@@ -6,20 +6,41 @@ import { z } from 'zod';
 // Validation schema for product filters
 const productFilterSchema = z.object({
     category: z.string().optional(),
-    minPrice: z.number().positive().optional(),
-    maxPrice: z.number().positive().optional(),
-    colors: z.array(z.string()).optional(),
-    sizes: z.array(z.string()).optional(),
-    materials: z.array(z.string()).optional(),
-    styles: z.array(z.string()).optional(),
-    occasions: z.array(z.string()).optional(),
-    seasons: z.array(z.string()).optional(),
+    minPrice: z.preprocess((val) => val ? parseFloat(val as string) : undefined, z.number().positive().optional()),
+    maxPrice: z.preprocess((val) => val ? parseFloat(val as string) : undefined, z.number().positive().optional()),
+    colors: z.preprocess((val) => {
+        if (typeof val === 'string') return val.split(',');
+        return val;
+    }, z.array(z.string()).optional()),
+    sizes: z.preprocess((val) => {
+        if (typeof val === 'string') return val.split(',');
+        return val;
+    }, z.array(z.string()).optional()),
+    materials: z.preprocess((val) => {
+        if (typeof val === 'string') return val.split(',');
+        return val;
+    }, z.array(z.string()).optional()),
+    styles: z.preprocess((val) => {
+        if (typeof val === 'string') return val.split(',');
+        return val;
+    }, z.array(z.string()).optional()),
+    occasions: z.preprocess((val) => {
+        if (typeof val === 'string') return val.split(',');
+        return val;
+    }, z.array(z.string()).optional()),
+    seasons: z.preprocess((val) => {
+        if (typeof val === 'string') return val.split(',');
+        return val;
+    }, z.array(z.string()).optional()),
     gender: z.string().optional(),
-    tags: z.array(z.string()).optional(),
-    inStock: z.boolean().optional(),
+    tags: z.preprocess((val) => {
+        if (typeof val === 'string') return val.split(',');
+        return val;
+    }, z.array(z.string()).optional()),
+    inStock: z.preprocess((val) => val === 'true' || val === true, z.boolean().optional()),
     sortBy: z.enum(['price_asc', 'price_desc', 'name_asc', 'name_desc', 'newest', 'popular']).optional(),
-    page: z.number().int().positive().optional(),
-    limit: z.number().int().positive().max(100).optional(),
+    page: z.preprocess((val) => val ? parseInt(val as string) : 1, z.number().int().positive().optional()),
+    limit: z.preprocess((val) => val ? parseInt(val as string) : 20, z.number().int().positive().max(100).optional()),
 });
 
 export class FilterController {
@@ -125,7 +146,9 @@ export class FilterController {
             const uniqueTags = new Set<string>();
             allTags.forEach((product: any) => {
                 product.tags.forEach((tag: string) => uniqueTags.add(tag));
-            });            // Get price range
+            });
+
+            // Get price range
             const priceRange = await prisma.product.aggregate({
                 where: {
                     variants: { some: { stock: { gt: 0 } } }
@@ -313,7 +336,9 @@ export class FilterController {
             // Calculate average ratings
             const productsWithRatings = products.map((product: any) => {
                 const totalRating = product.reviews.reduce((sum: number, review: any) => sum + review.rating, 0);
-                const averageRating = product.reviews.length > 0 ? totalRating / product.reviews.length : 0; return {
+                const averageRating = product.reviews.length > 0 ? totalRating / product.reviews.length : 0;
+
+                return {
                     ...product,
                     averageRating: Math.round(averageRating * 10) / 10,
                     reviewCount: product._count.reviews,
