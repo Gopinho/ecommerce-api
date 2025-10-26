@@ -91,7 +91,7 @@
 		"invalid_format": "Apenas imagens ou PDF são permitidos."
 	},
 	"audit": {
-		"list_success": "Lista de logs de auditoria.",  
+		"list_success": "Lista de logs de auditoria.",
 		"not_found": "Log de auditoria não encontrado."
 	},
 	"webhook": {
@@ -135,6 +135,11 @@
 			"0": {
 				"1": "587"
 			}
+		}
+	},
+	"\nInvalid `prisma": {
+		"user": {
+			"findUnique()` invocation in\nC": "\\Users\\gopin\\Desktop\\api\\src\\services\\auth.service.ts:32:34\n\n  29 }\n  30 \n  31 export async function login(email: string, password: string, token2FA?: string) {\n→ 32   const user = await prisma.user.findUnique(\nAuthentication failed against database server, the provided database credentials for `root` are not valid.\n\nPlease make sure to provide valid database credentials for the database server at the configured address."
 		}
 	}
 }
