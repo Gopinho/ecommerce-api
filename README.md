@@ -1002,3 +1002,338 @@ const userSchema = z.object({
 
 const result = userSchema.safeParse({ email: 'email@email.com', password: 'password' });
 ```
+
+---
+
+# 🖼️ **Sistema de Múltiplas Imagens por Produto**
+
+## 📋 **Funcionalidades de Upload de Imagens**
+
+### ✅ **Upload Único**
+```http
+POST /product-images/upload
+- Carrega 1 imagem
+- Define como principal (opcional)
+```
+
+### ✅ **Upload Múltiplo** 
+```http
+POST /product-images/upload-multiple
+- Carrega até 5 imagens de uma vez
+- Ordena automaticamente
+- Primeira pode ser definida como principal
+```
+
+### ✅ **Reordenação de Imagens**
+```http
+PUT /product-images/reorder/{productId}
+- Reorganiza ordem de exibição
+- Drag & drop friendly
+```
+
+### ✅ **Gestão Completa**
+```http
+GET /product-images/product/{productId} - Listar imagens
+PUT /product-images/{id}/main - Definir como principal
+DELETE /product-images/{id} - Eliminar imagem
+```
+
+---
+
+## 🚀 **Exemplos de Uso de Upload de Imagens**
+
+### **1. Upload Múltiplo via cURL**
+```bash
+# Login para obter token
+TOKEN=$(curl -s -X POST http://localhost:4000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@teste.com","password":"admin123"}' \
+  | jq -r '.token')
+
+# Upload de 3 imagens de uma vez
+curl -X POST http://localhost:4000/product-images/upload-multiple \
+  -H "Authorization: Bearer $TOKEN" \
+  -F "images=@foto1.jpg" \
+  -F "images=@foto2.jpg" \
+  -F "images=@foto3.jpg" \
+  -F "productId=PRODUCT_UUID" \
+  -F "altText=Fotos do produto" \
+  -F "isMain=true"
+```
+
+### **2. Upload Múltiplo via JavaScript**
+```javascript
+const formData = new FormData();
+
+// Adicionar múltiplas imagens
+const fileInput = document.querySelector('#multiple-images');
+for (let i = 0; i < fileInput.files.length; i++) {
+    formData.append('images', fileInput.files[i]);
+}
+
+formData.append('productId', 'uuid-do-produto');
+formData.append('altText', 'Galeria do produto');
+formData.append('isMain', 'true');
+
+fetch('/product-images/upload-multiple', {
+    method: 'POST',
+    headers: {
+        'Authorization': `Bearer ${token}`
+    },
+    body: formData
+})
+.then(response => response.json())
+.then(data => {
+    console.log(`${data.data.count} imagens carregadas!`);
+    console.log(data.data.images);
+});
+```
+
+### **3. Reordenar Imagens**
+```javascript
+// Após drag & drop, enviar nova ordem
+const newOrder = [
+    { id: 'img-uuid-1', sortOrder: 0 },
+    { id: 'img-uuid-2', sortOrder: 1 },
+    { id: 'img-uuid-3', sortOrder: 2 }
+];
+
+fetch(`/product-images/reorder/${productId}`, {
+    method: 'PUT',
+    headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(newOrder)
+})
+.then(response => response.json())
+.then(data => console.log('Ordem atualizada!'));
+```
+
+### **4. Listar e Exibir Galeria**
+```javascript
+// Listar todas as imagens ordenadas
+fetch(`/product-images/product/${productId}`)
+.then(response => response.json())
+.then(data => {
+    const images = data.data;
+    
+    // Imagem principal
+    const mainImage = images.find(img => img.isMain);
+    
+    // Todas ordenadas por sortOrder
+    const sortedImages = images.sort((a, b) => a.sortOrder - b.sortOrder);
+    
+    // Renderizar galeria
+    const gallery = document.getElementById('gallery');
+    sortedImages.forEach(img => {
+        const imgElement = document.createElement('img');
+        imgElement.src = `http://localhost:4000${img.url}`;
+        imgElement.alt = img.altText;
+        imgElement.className = img.isMain ? 'main-image' : 'gallery-image';
+        gallery.appendChild(imgElement);
+    });
+});
+```
+
+---
+
+## 🎯 **Cenários de Uso para E-commerce**
+
+### **Loja de Roupa**
+```
+📷 Imagem Principal: Vista frontal da peça
+📷 Imagem 2: Vista traseira  
+📷 Imagem 3: Detalhes (tecido, botões, etiquetas)
+📷 Imagem 4: Modelo usando a peça
+📷 Imagem 5: Combinações e styling
+```
+
+### **Fluxo de Trabalho Típico**
+1. **Upload múltiplo** - Carrega 3-5 fotos do produto
+2. **Definir principal** - Primeira imagem como destaque
+3. **Reordenar** - Organizar por importância visual
+4. **Atualizar** - Trocar imagem principal conforme necessário
+
+---
+
+## 📱 **Exemplo Frontend Completo**
+
+### **HTML para Upload Múltiplo**
+```html
+<!-- Formulário de Upload Múltiplo -->
+<form id="upload-form">
+    <input type="file" 
+           id="images" 
+           name="images" 
+           multiple 
+           accept="image/*" 
+           max="5">
+    
+    <input type="hidden" name="productId" value="uuid-produto">
+    
+    <label>
+        <input type="checkbox" name="isMain"> 
+        Primeira imagem como principal
+    </label>
+    
+    <button type="submit">Carregar Imagens</button>
+</form>
+
+<!-- Galeria com Drag & Drop -->
+<div id="image-gallery" class="sortable">
+    <!-- Imagens carregadas dinamicamente -->
+</div>
+```
+
+### **JavaScript para Gestão de Galeria**
+```javascript
+// Upload form handler
+document.getElementById('upload-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    const files = document.getElementById('images').files;
+    
+    for (let file of files) {
+        formData.append('images', file);
+    }
+    
+    formData.append('productId', document.querySelector('[name="productId"]').value);
+    formData.append('isMain', document.querySelector('[name="isMain"]').checked);
+    
+    uploadMultipleImages(formData);
+});
+
+// Função para upload múltiplo
+function uploadMultipleImages(formData) {
+    fetch('/product-images/upload-multiple', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(`${data.data.count} imagens carregadas!`);
+        loadGallery(formData.get('productId'));
+    })
+    .catch(error => console.error('Erro no upload:', error));
+}
+
+// Carregar galeria
+function loadGallery(productId) {
+    fetch(`/product-images/product/${productId}`)
+    .then(response => response.json())
+    .then(data => {
+        const gallery = document.getElementById('image-gallery');
+        gallery.innerHTML = '';
+        
+        data.data
+            .sort((a, b) => a.sortOrder - b.sortOrder)
+            .forEach(img => {
+                const div = document.createElement('div');
+                div.className = 'gallery-item';
+                div.dataset.imageId = img.id;
+                div.innerHTML = `
+                    <img src="${img.url}" alt="${img.altText}" 
+                         class="${img.isMain ? 'main' : 'secondary'}">
+                    <div class="image-controls">
+                        <span>${img.isMain ? '👑 Principal' : 'Secundária'}</span>
+                        <button onclick="setMainImage('${img.id}')">Definir Principal</button>
+                        <button onclick="deleteImage('${img.id}')">Eliminar</button>
+                    </div>
+                `;
+                gallery.appendChild(div);
+            });
+    });
+}
+
+// Drag & Drop para reordenação (requer SortableJS)
+new Sortable(document.getElementById('image-gallery'), {
+    onEnd: function(evt) {
+        const newOrder = Array.from(evt.to.children).map((item, index) => ({
+            id: item.dataset.imageId,
+            sortOrder: index
+        }));
+        
+        reorderImages(productId, newOrder);
+    }
+});
+```
+
+---
+
+## 📊 **Estrutura da Base de Dados**
+
+### **Relação Produto-Imagens**
+```sql
+-- Um produto pode ter múltiplas imagens
+Product "Camisola Vermelha"
+├── 📷 Image 1 (isMain: true, sortOrder: 0) - Vista frontal
+├── 📷 Image 2 (isMain: false, sortOrder: 1) - Vista traseira  
+├── 📷 Image 3 (isMain: false, sortOrder: 2) - Detalhes do tecido
+└── 📷 Image 4 (isMain: false, sortOrder: 3) - Modelo usando
+```
+
+### **Campos da Tabela ProductImage**
+```typescript
+model ProductImage {
+  id        String   @id @default(cuid())
+  productId String   // Ligação ao produto
+  url       String   // Caminho do ficheiro
+  altText   String?  // Texto alternativo
+  sortOrder Int      // Ordem de exibição (0, 1, 2...)
+  isMain    Boolean  // Se é a imagem principal
+  createdAt DateTime @default(now())
+}
+```
+
+---
+
+## 🔧 **Configuração de Upload**
+
+### **Tipos de Ficheiro Suportados**
+- ✅ **JPEG/JPG** - Fotografias comprimidas
+- ✅ **PNG** - Imagens com transparência
+- ✅ **GIF** - Imagens animadas
+- ✅ **WebP** - Formato moderno otimizado
+
+### **Limites e Validação**
+- ✅ **Tamanho máximo**: 5MB por imagem
+- ✅ **Upload múltiplo**: Até 5 imagens simultâneas
+- ✅ **Validação de tipo**: Apenas imagens aceites
+- ✅ **Nomes únicos**: Timestamp + random para evitar conflitos
+- ✅ **Cleanup automático**: Remove ficheiros em caso de erro
+
+### **Armazenamento**
+```
+📁 uploads/
+  └── 📁 images/
+      ├── produto-frontal-1698765432-123456789.jpg
+      ├── produto-traseira-1698765433-987654321.jpg
+      └── produto-detalhes-1698765434-456789123.png
+```
+
+### **URLs de Acesso**
+```
+Base URL: http://localhost:4000
+Imagem: /uploads/images/nome-arquivo.jpg
+URL completa: http://localhost:4000/uploads/images/nome-arquivo.jpg
+```
+
+---
+
+## 💡 **Melhorias Futuras Sugeridas**
+
+- **📏 Redimensionamento automático** (thumbnail, medium, large)
+- **⚡ Lazy loading** para galerias grandes
+- **🖼️ Watermark automático** com logo da loja
+- **☁️ Cloud storage** (AWS S3, Cloudinary) para escalabilidade
+- **🎨 Filtros de imagem** (preto/branco, sépia, etc.)
+- **📱 Responsive images** com srcset para diferentes dispositivos
+- **🗜️ Compressão automática** para otimizar velocidade
+- **📋 Metadados EXIF** para informações da câmara
+
+---
+
+**🎉 Sistema completo de múltiplas imagens implementado! Cada produto pode ter a sua galeria profissional.** 🚀

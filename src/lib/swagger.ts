@@ -1015,37 +1015,287 @@ const swaggerDefinition = {
         },
 
         // === IMAGENS DE PRODUTOS ===
-        '/product-images': {
-            get: {
-                summary: 'Listar imagens de produtos',
-                tags: ['Imagens de Produtos'],
-                parameters: [
-                    { name: 'productId', in: 'query', schema: { type: 'string' } }
-                ],
-                responses: {
-                    '200': { description: 'Lista de imagens' }
-                }
-            },
+        '/product-images/upload': {
             post: {
-                summary: 'Upload de imagem',
+                summary: 'Upload direto de imagem para produto',
                 tags: ['Imagens de Produtos'],
                 security: [{ bearerAuth: [] }],
                 requestBody: {
+                    required: true,
                     content: {
                         'multipart/form-data': {
                             schema: {
                                 type: 'object',
+                                required: ['image', 'productId'],
                                 properties: {
-                                    file: { type: 'string', format: 'binary' },
-                                    productId: { type: 'string' },
-                                    isPrimary: { type: 'boolean' }
+                                    image: {
+                                        type: 'string',
+                                        format: 'binary',
+                                        description: 'Ficheiro de imagem (JPEG, PNG, GIF, WebP - máx 5MB)'
+                                    },
+                                    productId: {
+                                        type: 'string',
+                                        format: 'uuid',
+                                        description: 'ID do produto'
+                                    },
+                                    altText: {
+                                        type: 'string',
+                                        description: 'Texto alternativo para acessibilidade'
+                                    },
+                                    sortOrder: {
+                                        type: 'integer',
+                                        minimum: 0,
+                                        description: 'Ordem de exibição (padrão: 0)'
+                                    },
+                                    isMain: {
+                                        type: 'boolean',
+                                        description: 'Se é a imagem principal do produto'
+                                    }
                                 }
                             }
                         }
                     }
                 },
                 responses: {
-                    '201': { description: 'Imagem enviada com sucesso' }
+                    '201': {
+                        description: 'Imagem carregada com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        message: { type: 'string' },
+                                        data: {
+                                            type: 'object',
+                                            properties: {
+                                                id: { type: 'string' },
+                                                productId: { type: 'string' },
+                                                url: { type: 'string' },
+                                                altText: { type: 'string' },
+                                                sortOrder: { type: 'integer' },
+                                                isMain: { type: 'boolean' },
+                                                createdAt: { type: 'string', format: 'date-time' }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Nenhuma imagem enviada ou dados inválidos' },
+                    '404': { description: 'Produto não encontrado' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissões de admin' }
+                }
+            }
+        },
+        '/product-images/upload-multiple': {
+            post: {
+                summary: 'Upload múltiplo de imagens para produto (até 5)',
+                tags: ['Imagens de Produtos'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'multipart/form-data': {
+                            schema: {
+                                type: 'object',
+                                required: ['images', 'productId'],
+                                properties: {
+                                    images: {
+                                        type: 'array',
+                                        items: {
+                                            type: 'string',
+                                            format: 'binary'
+                                        },
+                                        maxItems: 5,
+                                        description: 'Múltiplos ficheiros de imagem (máx 5 - JPEG, PNG, GIF, WebP - 5MB cada)'
+                                    },
+                                    productId: {
+                                        type: 'string',
+                                        format: 'uuid',
+                                        description: 'ID do produto'
+                                    },
+                                    altText: {
+                                        type: 'string',
+                                        description: 'Texto alternativo base (será numerado automaticamente)'
+                                    },
+                                    sortOrder: {
+                                        type: 'integer',
+                                        minimum: 0,
+                                        description: 'Ordem inicial (será incrementada para cada imagem)'
+                                    },
+                                    isMain: {
+                                        type: 'boolean',
+                                        description: 'Se a primeira imagem será a principal'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Imagens carregadas com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        message: { type: 'string' },
+                                        data: {
+                                            type: 'object',
+                                            properties: {
+                                                count: { type: 'integer' },
+                                                images: {
+                                                    type: 'array',
+                                                    items: {
+                                                        type: 'object',
+                                                        properties: {
+                                                            id: { type: 'string' },
+                                                            productId: { type: 'string' },
+                                                            url: { type: 'string' },
+                                                            altText: { type: 'string' },
+                                                            sortOrder: { type: 'integer' },
+                                                            isMain: { type: 'boolean' }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Nenhuma imagem enviada ou dados inválidos' },
+                    '404': { description: 'Produto não encontrado' }
+                }
+            }
+        },
+        '/product-images/reorder/{productId}': {
+            put: {
+                summary: 'Reordenar imagens de um produto',
+                tags: ['Imagens de Produtos'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'productId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string', format: 'uuid' }
+                    }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    required: ['id', 'sortOrder'],
+                                    properties: {
+                                        id: {
+                                            type: 'string',
+                                            format: 'uuid',
+                                            description: 'ID da imagem'
+                                        },
+                                        sortOrder: {
+                                            type: 'integer',
+                                            minimum: 0,
+                                            description: 'Nova ordem'
+                                        }
+                                    }
+                                },
+                                example: [
+                                    { "id": "img1-uuid", "sortOrder": 0 },
+                                    { "id": "img2-uuid", "sortOrder": 1 },
+                                    { "id": "img3-uuid", "sortOrder": 2 }
+                                ]
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Ordem das imagens atualizada com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '404': { description: 'Produto não encontrado' }
+                }
+            }
+        },
+        '/product-images/product/{productId}': {
+            get: {
+                summary: 'Listar imagens de um produto',
+                tags: ['Imagens de Produtos'],
+                parameters: [
+                    {
+                        name: 'productId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string', format: 'uuid' },
+                        description: 'ID do produto'
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Lista de imagens do produto',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: {
+                                                type: 'object',
+                                                properties: {
+                                                    id: { type: 'string' },
+                                                    productId: { type: 'string' },
+                                                    url: { type: 'string' },
+                                                    altText: { type: 'string' },
+                                                    sortOrder: { type: 'integer' },
+                                                    isMain: { type: 'boolean' },
+                                                    createdAt: { type: 'string', format: 'date-time' }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        '/product-images': {
+            post: {
+                summary: 'Criar imagem por URL',
+                tags: ['Imagens de Produtos'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['productId', 'url'],
+                                properties: {
+                                    productId: { type: 'string', format: 'uuid' },
+                                    url: { type: 'string', format: 'url' },
+                                    altText: { type: 'string' },
+                                    sortOrder: { type: 'integer', minimum: 0 },
+                                    isMain: { type: 'boolean' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': { description: 'Imagem criada com sucesso' }
                 }
             }
         },

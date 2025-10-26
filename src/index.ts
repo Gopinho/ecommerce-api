@@ -61,6 +61,9 @@ i18n.configure({
 app.use(i18n.init);
 app.use(express.json());
 
+// Serve static files for uploaded images
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Metrics middleware (antes das rotas)
 app.use(metricsMiddleware);
 

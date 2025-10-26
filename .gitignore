@@ -64,9 +64,12 @@ jspm_packages/
 ehthumbs.db
 Thumbs.db
 
-# Uploads
-uploads/
-public/uploads/
+# Uploads - ignore all uploaded files but keep directory structure
+uploads/*
+!uploads/.gitkeep
+!uploads/images/
+uploads/images/*
+!uploads/images/.gitkeep
 
 # Database
 *.db
