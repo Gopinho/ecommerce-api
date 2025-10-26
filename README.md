@@ -4,7 +4,7 @@
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen)](https://github.com/Gopinho/ecommerce-api)
 [![Coverage](https://img.shields.io/badge/coverage-85%25-green)](https://github.com/Gopinho/ecommerce-api)
 
-API completa para e-commerce com **TODAS** as funcionalidades implementadas e funcionais.
+API completa para e-commerce com **TODAS** as funcionalidades implementadas e funcionais, incluindo sistema avançado de newsletter marketing.
 
 ---
 
@@ -123,7 +123,16 @@ npm run docker:up
 - ✅ **Upload**: Comprovativo de pagamento
 - ✅ **Tracking**: Seguimento de encomendas
 
-### 👥 **Admin & Dashboard**
+### � **Sistema de Newsletter Marketing**
+- ✅ **Subscrições**: API pública para newsletter
+- ✅ **Gestão de Subscritores**: Tags, segmentação e filtros
+- ✅ **Templates de Email**: Sistema de templates reutilizáveis
+- ✅ **Campanhas**: Criação, agendamento e envio
+- ✅ **Analytics**: Tracking de abertura e cliques
+- ✅ **Automação**: Welcome emails e campanhas automáticas
+- ✅ **Segmentação**: Tags para personalização de público
+
+### �👥 **Admin & Dashboard**
 - ✅ **Dashboard**: Métricas e estatísticas
 - ✅ **Logs Auditoria**: Rastreamento de ações
 - ✅ **Permissões**: Gestão granular
@@ -144,7 +153,7 @@ npm run docker:up
 
 | Métrica | Valor |
 |---------|-------|
-| **Endpoints** | 120+ |
+| **Endpoints** | 140+ |
 | **Controladores** | 20+ |
 | **Serviços** | 15+ |
 | **Middlewares** | 8+ |
@@ -195,7 +204,7 @@ npm run docker:logs     # Ver logs
 ### **Swagger/OpenAPI**
 - **URL**: `http://localhost:4000/api-docs`
 - **Formato**: OpenAPI 3.0.0
-- **Cobertura**: 120+ endpoints documentados
+- **Cobertura**: 140+ endpoints documentados
 
 ### **Endpoints Principais**
 
@@ -205,6 +214,7 @@ npm run docker:logs     # Ver logs
 | **Products** | 12 | `/products`, `/products/{id}`, `/products/popular` |
 | **Cart** | 6 | `/cart`, `/cart/{id}` |
 | **Checkout** | 4 | `/checkout/stripe`, `/checkout/confirm` |
+| **Newsletter** | 20+ | `/newsletter/subscribe`, `/newsletter/campaigns`, `/newsletter/templates` |
 | **Admin** | 15 | `/admin/stats`, `/admin/users`, `/admin/orders` |
 | **Health** | 2 | `/health`, `/health/simple` |
 | **Metrics** | 2 | `/metrics`, `/metrics/json` |
@@ -436,6 +446,357 @@ npm run test:watch
 - `PUT /product-images/:id` - Atualizar imagem (Admin)
 - `PUT /product-images/:id/main` - Definir como principal (Admin)
 - `DELETE /product-images/:id` - Eliminar imagem (Admin)
+
+---
+
+---
+
+# 📧 **Sistema de Newsletter Marketing Completo**
+
+## 🚀 **Funcionalidades de Marketing por Email**
+
+### ✅ **Subscrições Públicas**
+- API pública para subscrever newsletter
+- Cancelamento de subscrição com token único
+- Gestão de preferências dos subscritores
+- Validação e sanitização de emails
+- Prevenção de spam e emails duplicados
+
+### ✅ **Gestão de Subscritores (Admin)**
+- Lista completa com paginação e filtros
+- Pesquisa por email, nome ou origem
+- Sistema de tags para segmentação
+- Estatísticas de engajamento por subscritor
+- Exportação de dados para análise
+
+### ✅ **Sistema de Templates**
+- Templates reutilizáveis para diferentes tipos de email
+- Variáveis dinâmicas (nome, produto, data, etc.)
+- Tipos predefinidos: Welcome, Promocional, Novidades, etc.
+- Editor de conteúdo com suporte HTML
+- Pré-visualização antes do envio
+
+### ✅ **Campanhas de Email**
+- Criação e gestão de campanhas
+- Agendamento para envio futuro
+- Segmentação por tags e critérios
+- Envio em lote com controlo de rate limiting
+- Cancelamento de campanhas em andamento
+
+### ✅ **Analytics e Tracking**
+- Tracking de abertura de emails (pixel 1x1)
+- Tracking de cliques em links
+- Estatísticas detalhadas por campanha
+- Taxas de abertura, clique e bounce
+- Métricas de performance em tempo real
+
+### ✅ **Automação e Workflows**
+- Welcome emails automáticos
+- Campanhas baseadas em comportamento
+- Re-engagement para subscritores inativos
+- Emails de carrinho abandonado
+- Campanhas sazonais automáticas
+
+---
+
+## 📡 **Endpoints da Newsletter**
+
+### **🌐 APIs Públicas (Sem Autenticação)**
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/newsletter/subscribe` | Subscrever newsletter |
+| POST | `/newsletter/unsubscribe` | Cancelar subscrição |
+| PUT | `/newsletter/preferences` | Atualizar preferências |
+| GET | `/newsletter/track/open/{campaignId}/{subscriberId}` | Tracking de abertura |
+| GET | `/newsletter/track/click/{campaignId}/{subscriberId}` | Tracking de clique |
+
+### **🔐 APIs Admin (Autenticação Necessária)**
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| GET | `/newsletter/subscribers` | Listar subscritores |
+| GET/POST | `/newsletter/campaigns` | Gerir campanhas |
+| GET | `/newsletter/campaigns/{id}` | Detalhes da campanha |
+| POST | `/newsletter/campaigns/{id}/send` | Enviar campanha |
+| POST | `/newsletter/campaigns/{id}/cancel` | Cancelar campanha |
+| GET | `/newsletter/campaigns/{id}/stats` | Estatísticas da campanha |
+| GET/POST | `/newsletter/templates` | Gerir templates |
+| PUT/DELETE | `/newsletter/templates/{id}` | Atualizar/remover templates |
+| GET/POST | `/newsletter/tags` | Gerir tags |
+| PUT/DELETE | `/newsletter/tags/{id}` | Atualizar/remover tags |
+| POST/DELETE | `/newsletter/subscribers/{subscriberId}/tags/{tagId}` | Gerir tags dos subscritores |
+
+---
+
+## 💡 **Exemplos de Uso**
+
+### **1. Subscrever Newsletter (Público)**
+```bash
+curl -X POST http://localhost:4000/newsletter/subscribe \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "cliente@email.com",
+    "firstName": "João",
+    "lastName": "Silva",
+    "source": "WEBSITE",
+    "preferences": {
+      "promotional": true,
+      "newArrivals": true,
+      "seasonal": false
+    }
+  }'
+```
+
+### **2. Criar Campanha (Admin)**
+```bash
+# Obter token admin
+TOKEN=$(curl -s -X POST http://localhost:4000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@teste.com","password":"admin123"}' \
+  | jq -r '.token')
+
+# Criar campanha
+curl -X POST http://localhost:4000/newsletter/campaigns \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Promoção Black Friday",
+    "subject": "🔥 Descontos até 70% - Black Friday",
+    "templateId": "template-promocional-uuid",
+    "type": "PROMOTIONAL",
+    "scheduledFor": "2024-11-29T09:00:00.000Z",
+    "segmentConditions": {
+      "tags": ["promocoes", "vip"],
+      "isActive": true
+    },
+    "variables": {
+      "discount": "70%",
+      "validUntil": "30 de Novembro"
+    }
+  }'
+```
+
+### **3. Listar Subscritores com Filtros (Admin)**
+```bash
+curl "http://localhost:4000/newsletter/subscribers?page=1&limit=20&search=gmail&isActive=true&source=WEBSITE" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### **4. Enviar Campanha (Admin)**
+```bash
+curl -X POST http://localhost:4000/newsletter/campaigns/campaign-uuid/send \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+### **5. Ver Estatísticas da Campanha (Admin)**
+```bash
+curl http://localhost:4000/newsletter/campaigns/campaign-uuid/stats \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+---
+
+## 📊 **Modelos de Dados**
+
+### **NewsletterSubscriber**
+```typescript
+{
+  id: string
+  email: string
+  firstName?: string
+  lastName?: string
+  isActive: boolean
+  source: 'WEBSITE' | 'SOCIAL' | 'STORE' | 'IMPORT'
+  preferences: object
+  unsubscribeToken: string
+  createdAt: Date
+  tags: NewsletterTag[]
+}
+```
+
+### **NewsletterCampaign**
+```typescript
+{
+  id: string
+  name: string
+  subject: string
+  content?: string
+  templateId: string
+  type: 'GENERAL' | 'WELCOME' | 'PROMOTIONAL' | 'NEW_ARRIVALS'
+  status: 'DRAFT' | 'SCHEDULED' | 'SENDING' | 'SENT' | 'CANCELLED'
+  scheduledFor?: Date
+  sentAt?: Date
+  segmentConditions: object
+  variables: object
+  template: NewsletterTemplate
+  stats?: NewsletterCampaignStats
+}
+```
+
+### **NewsletterTemplate**
+```typescript
+{
+  id: string
+  name: string
+  description?: string
+  content: string
+  variables: object
+  type: 'GENERAL' | 'WELCOME' | 'PROMOTIONAL' | etc.
+  isActive: boolean
+  createdBy: string
+}
+```
+
+### **NewsletterCampaignStats**
+```typescript
+{
+  id: string
+  campaignId: string
+  totalSent: number
+  opened: number
+  clicked: number
+  bounced: number
+  unsubscribed: number
+  openRate: string
+  clickRate: string
+}
+```
+
+---
+
+## 🎯 **Templates Pré-Configurados**
+
+### **1. Welcome Email**
+```html
+Bem-vindo à nossa newsletter, {{firstName}}!
+
+Obrigado por se juntar à nossa comunidade de {{subscriberCount}} pessoas.
+
+{{welcomeMessage}}
+
+[Botão: Ver Novidades]
+```
+
+### **2. Email Promocional**
+```html
+🔥 {{discount}} de desconto especial para si!
+
+Olá {{firstName}},
+
+Por tempo limitado, aproveite {{discount}} de desconto em toda a loja.
+
+Válido até: {{validUntil}}
+Código: {{couponCode}}
+
+[Botão: Aproveitar Desconto]
+```
+
+### **3. Novos Produtos**
+```html
+👗 Chegaram novidades que vai adorar!
+
+Olá {{firstName}},
+
+Acabámos de adicionar {{newProductsCount}} novos produtos à loja.
+
+{{productsList}}
+
+[Botão: Ver Novidades]
+```
+
+---
+
+## 🔧 **Configuração de Email**
+
+### **Variáveis de Ambiente**
+```env
+# Configuração SMTP
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=loja@seudominio.com
+EMAIL_PASS=senha_aplicacao
+EMAIL_FROM=loja@seudominio.com
+
+# Newsletter
+NEWSLETTER_UNSUBSCRIBE_URL=http://localhost:4000/newsletter/unsubscribe
+NEWSLETTER_TRACKING_URL=http://localhost:4000/newsletter/track
+```
+
+---
+
+## 📈 **Analytics e Métricas**
+
+### **Métricas Disponíveis**
+- **📧 Total de Subscritores**: Ativos vs Inativos
+- **📊 Taxa de Abertura**: % de emails abertos
+- **🖱️ Taxa de Clique**: % de links clicados
+- **📉 Taxa de Bounce**: Emails não entregues
+- **❌ Taxa de Unsubscribe**: Cancelamentos de subscrição
+- **📅 Crescimento**: Novos subscritores por período
+- **🎯 Engagement**: Subscritores mais ativos
+
+### **Dashboard de Estatísticas**
+```json
+{
+  "totalSubscribers": 1250,
+  "activeSubscribers": 1180,
+  "campaignsSent": 45,
+  "avgOpenRate": "24.5%",
+  "avgClickRate": "3.2%",
+  "recentCampaigns": [...]
+}
+```
+
+---
+
+## 🎨 **Personalização e Segmentação**
+
+### **Sistema de Tags**
+```typescript
+// Tags predefinidas
+const defaultTags = [
+  'vip', 'promocoes', 'novidades', 
+  'homem', 'mulher', 'crianca',
+  'natal', 'verao', 'inverno'
+]
+```
+
+### **Critérios de Segmentação**
+- **🏷️ Por Tags**: Segmentar por interesses
+- **📅 Por Data**: Subscritores recentes vs antigos
+- **🎯 Por Atividade**: Ativos vs inativos
+- **💰 Por Compras**: Clientes vs prospects
+- **📧 Por Origem**: Website, social, loja física
+
+---
+
+## 🛡️ **Conformidade e Segurança**
+
+### **GDPR Compliance**
+- ✅ **Opt-in explícito**: Checkbox obrigatório
+- ✅ **Fácil unsubscribe**: Link em todos os emails
+- ✅ **Gestão de dados**: Ver/editar/apagar dados
+- ✅ **Consent tracking**: Log de quando subscreveu
+- ✅ **Data retention**: Limpeza automática de dados antigos
+
+### **Prevenção de Spam**
+- ✅ **Rate limiting**: Limites de envio
+- ✅ **Blacklist check**: Emails bloqueados
+- ✅ **Double opt-in**: Confirmação por email (opcional)
+- ✅ **Bounce handling**: Gestão de emails inválidos
+- ✅ **Unsubscribe tracking**: Honrar pedidos de saída
+
+### **Segurança de Dados**
+- ✅ **Encrypted storage**: Emails encriptados
+- ✅ **Access control**: Apenas admins acedem
+- ✅ **Audit logs**: Todas as ações registadas
+- ✅ **Token security**: Tokens únicos para unsubscribe
+- ✅ **Input validation**: Validação rigorosa de dados
+
+---
+
+**🎯 Sistema de newsletter profissional implementado com todas as funcionalidades essenciais para marketing por email!** 📧✨
 
 ---
 
@@ -739,9 +1100,10 @@ git push origin feature/nova-funcionalidade
 ## 🎉 **Projeto 100% Completo!**
 
 ### ✅ **O Que Está Implementado**
-- **API Completa**: 120+ endpoints funcionais
+- **API Completa**: 140+ endpoints funcionais
 - **Autenticação Robusta**: JWT + 2FA + RBAC
 - **E-commerce Full**: Produtos → Carrinho → Pagamento → Entrega
+- **Newsletter Marketing**: Sistema completo de email marketing
 - **Admin Dashboard**: Métricas e gestão completa
 - **DevOps Ready**: Docker + CI/CD + Monitoring
 - **Produção Ready**: Health checks + Metrics + Logs

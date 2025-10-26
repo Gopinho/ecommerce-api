@@ -1,0 +1,99 @@
+<h1 style="color: #007cba; margin-bottom: 20px;">{{campaignTitle}}</h1>
+
+<div style="margin-bottom: 25px;">
+    {{campaignContent}}
+</div>
+
+<!-- Seção de produtos em destaque (se aplicável) -->
+{{#if featuredProducts}}
+<div style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin: 25px 0;">
+    <h3 style="color: #333; margin-top: 0; text-align: center;">✨ Produtos em Destaque</h3>
+    <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+        {{#each featuredProducts}}
+        <div
+            style="text-align: center; background: white; padding: 15px; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+            <img src="{{image}}" alt="{{name}}"
+                style="width: 100%; max-width: 150px; height: auto; margin-bottom: 10px; border-radius: 5px;">
+            <h4 style="margin: 10px 0 5px; font-size: 14px; color: #333;">{{name}}</h4>
+            <p style="color: #007cba; font-weight: bold; font-size: 16px; margin: 5px 0;">{{price}}</p>
+            <a href="{{url}}"
+                style="display: inline-block; background: #007cba; color: white; padding: 8px 15px; text-decoration: none; border-radius: 3px; font-size: 12px;">Ver
+                Produto</a>
+        </div>
+        {{/each}}
+    </div>
+</div>
+{{/if}}
+
+<!-- Call to Action principal -->
+{{#if mainCTA}}
+<div style="text-align: center; margin: 30px 0;">
+    <a href="{{mainCTA.url}}" class="btn" style="font-size: 18px; padding: 15px 40px;">
+        {{mainCTA.text}}
+    </a>
+</div>
+{{/if}}
+
+<!-- Seção de desconto/cupão (se aplicável) -->
+{{#if discount}}
+<div
+    style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 20px; border-radius: 8px; margin: 25px 0; text-align: center;">
+    <h3 style="margin-top: 0; color: white;">🎯 {{discount.title}}</h3>
+    <p style="margin-bottom: 15px; font-size: 16px;">{{discount.description}}</p>
+    {{#if discount.code}}
+    <p style="font-size: 20px; font-weight: bold; background: rgba(255,255,255,0.2); 
+       padding: 12px; border-radius: 5px; display: inline-block; margin: 10px 0;">
+        Código: <span style="letter-spacing: 3px;">{{discount.code}}</span>
+    </p>
+    {{/if}}
+    {{#if discount.expiration}}
+    <p style="font-size: 12px; opacity: 0.9; margin-bottom: 0;">
+        {{discount.expiration}}
+    </p>
+    {{/if}}
+    {{#if discount.ctaUrl}}
+    <div style="margin-top: 15px;">
+        <a href="{{discount.ctaUrl}}"
+            style="background: white; color: #28a745; padding: 10px 25px; text-decoration: none; border-radius: 5px; font-weight: bold;">
+            Usar Desconto
+        </a>
+    </div>
+    {{/if}}
+</div>
+{{/if}}
+
+<!-- Conteúdo adicional -->
+{{#if additionalContent}}
+<div style="margin: 25px 0;">
+    {{additionalContent}}
+</div>
+{{/if}}
+
+<!-- Dicas ou informações extras -->
+{{#if tips}}
+<div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 25px 0;">
+    <h4 style="color: #856404; margin-top: 0;">💡 Dica Fashion</h4>
+    <p style="color: #856404; margin-bottom: 0;">{{tips}}</p>
+</div>
+{{/if}}
+
+<!-- Links para redes sociais -->
+<div style="text-align: center; margin: 30px 0; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+    <h4 style="color: #333; margin-top: 0;">Segue-nos nas redes sociais</h4>
+    <p style="color: #666; margin-bottom: 15px;">
+        Fica a par das últimas tendências e novidades!
+    </p>
+    <div>
+        <a href="https://facebook.com/lojafashion"
+            style="display: inline-block; margin: 0 10px; background: #3b5998; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 12px;">Facebook</a>
+        <a href="https://instagram.com/lojafashion"
+            style="display: inline-block; margin: 0 10px; background: #e4405f; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 12px;">Instagram</a>
+        <a href="https://twitter.com/lojafashion"
+            style="display: inline-block; margin: 0 10px; background: #1da1f2; color: white; padding: 8px 15px; text-decoration: none; border-radius: 5px; font-size: 12px;">Twitter</a>
+    </div>
+</div>
+
+<p style="font-size: 14px; color: #666; text-align: center; margin-top: 25px;">
+    Obrigado por seres parte da nossa comunidade, {{firstName}}!
+</p>

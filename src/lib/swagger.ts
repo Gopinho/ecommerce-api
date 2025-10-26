@@ -135,6 +135,130 @@ const swaggerDefinition = {
                     message: { type: 'string' },
                     status: { type: 'integer' }
                 }
+            },
+            // === NEWSLETTER SCHEMAS ===
+            NewsletterSubscriber: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    email: { type: 'string', format: 'email' },
+                    firstName: { type: 'string' },
+                    lastName: { type: 'string' },
+                    isActive: { type: 'boolean' },
+                    preferences: { type: 'object' },
+                    source: { type: 'string' },
+                    subscribedAt: { type: 'string', format: 'date-time' },
+                    unsubscribedAt: { type: 'string', format: 'date-time', nullable: true },
+                    confirmedAt: { type: 'string', format: 'date-time', nullable: true }
+                }
+            },
+            NewsletterSubscribeRequest: {
+                type: 'object',
+                required: ['email'],
+                properties: {
+                    email: { type: 'string', format: 'email' },
+                    firstName: { type: 'string' },
+                    lastName: { type: 'string' },
+                    preferences: {
+                        type: 'object',
+                        properties: {
+                            frequency: { type: 'string', enum: ['daily', 'weekly', 'monthly'] },
+                            categories: {
+                                type: 'array',
+                                items: { type: 'string' }
+                            }
+                        }
+                    },
+                    source: { type: 'string', default: 'website' }
+                }
+            },
+            NewsletterCampaign: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                    subject: { type: 'string' },
+                    content: { type: 'string' },
+                    plainText: { type: 'string' },
+                    status: {
+                        type: 'string',
+                        enum: ['DRAFT', 'SCHEDULED', 'SENDING', 'SENT', 'CANCELLED']
+                    },
+                    type: {
+                        type: 'string',
+                        enum: ['GENERAL', 'WELCOME', 'PROMOTIONAL', 'NEW_ARRIVALS', 'ABANDONED_CART', 'WIN_BACK', 'SEASONAL']
+                    },
+                    scheduledFor: { type: 'string', format: 'date-time', nullable: true },
+                    sentAt: { type: 'string', format: 'date-time', nullable: true },
+                    createdAt: { type: 'string', format: 'date-time' },
+                    totalSent: { type: 'integer' },
+                    opened: { type: 'integer' },
+                    clicked: { type: 'integer' },
+                    bounced: { type: 'integer' },
+                    unsubscribed: { type: 'integer' }
+                }
+            },
+            NewsletterCampaignRequest: {
+                type: 'object',
+                required: ['name', 'subject', 'content'],
+                properties: {
+                    name: { type: 'string' },
+                    subject: { type: 'string' },
+                    content: { type: 'string' },
+                    plainText: { type: 'string' },
+                    type: {
+                        type: 'string',
+                        enum: ['GENERAL', 'WELCOME', 'PROMOTIONAL', 'NEW_ARRIVALS', 'ABANDONED_CART', 'WIN_BACK', 'SEASONAL'],
+                        default: 'GENERAL'
+                    },
+                    targetTags: {
+                        type: 'array',
+                        items: { type: 'string' }
+                    },
+                    scheduledFor: { type: 'string', format: 'date-time' }
+                }
+            },
+            NewsletterTemplate: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                    description: { type: 'string' },
+                    content: { type: 'string' },
+                    variables: { type: 'object' },
+                    type: {
+                        type: 'string',
+                        enum: ['GENERAL', 'WELCOME', 'PROMOTIONAL', 'NEW_ARRIVALS', 'ABANDONED_CART', 'WIN_BACK', 'SEASONAL']
+                    },
+                    isActive: { type: 'boolean' },
+                    createdAt: { type: 'string', format: 'date-time' }
+                }
+            },
+            NewsletterTag: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                    color: { type: 'string' },
+                    createdAt: { type: 'string', format: 'date-time' }
+                }
+            },
+            NewsletterCampaignStats: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string' },
+                    name: { type: 'string' },
+                    subject: { type: 'string' },
+                    status: { type: 'string' },
+                    sentAt: { type: 'string', format: 'date-time' },
+                    totalSent: { type: 'integer' },
+                    opened: { type: 'integer' },
+                    clicked: { type: 'integer' },
+                    bounced: { type: 'integer' },
+                    unsubscribed: { type: 'integer' },
+                    openRate: { type: 'string' },
+                    clickRate: { type: 'string' }
+                }
             }
         }
     },
@@ -2301,6 +2425,749 @@ const swaggerDefinition = {
                         }
                     },
                     '503': { description: 'Sistema com problemas' }
+                }
+            }
+        },
+        // === NEWSLETTER ===
+        '/newsletter/subscribe': {
+            post: {
+                summary: 'Subscrever newsletter',
+                tags: ['Newsletter'],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: { '$ref': '#/components/schemas/NewsletterSubscribeRequest' }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Subscrito com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        message: { type: 'string' },
+                                        data: { '$ref': '#/components/schemas/NewsletterSubscriber' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos' },
+                    '409': { description: 'Email já subscrito' }
+                }
+            }
+        },
+        '/newsletter/unsubscribe': {
+            post: {
+                summary: 'Cancelar subscrição da newsletter',
+                tags: ['Newsletter'],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    email: { type: 'string', format: 'email' },
+                                    token: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Subscrição cancelada com sucesso' },
+                    '400': { description: 'Email ou token necessário' },
+                    '404': { description: 'Subscritor não encontrado' }
+                }
+            }
+        },
+        '/newsletter/preferences': {
+            put: {
+                summary: 'Atualizar preferências da newsletter',
+                tags: ['Newsletter'],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['email', 'preferences'],
+                                properties: {
+                                    email: { type: 'string', format: 'email' },
+                                    preferences: { type: 'object' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Preferências atualizadas com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '404': { description: 'Subscritor não encontrado' }
+                }
+            }
+        },
+        '/newsletter/subscribers': {
+            get: {
+                summary: 'Listar subscritores (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'page',
+                        in: 'query',
+                        schema: { type: 'integer', default: 1 }
+                    },
+                    {
+                        name: 'limit',
+                        in: 'query',
+                        schema: { type: 'integer', default: 20 }
+                    },
+                    {
+                        name: 'search',
+                        in: 'query',
+                        schema: { type: 'string' }
+                    },
+                    {
+                        name: 'isActive',
+                        in: 'query',
+                        schema: { type: 'boolean' }
+                    },
+                    {
+                        name: 'source',
+                        in: 'query',
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Lista de subscritores',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'object',
+                                            properties: {
+                                                subscribers: {
+                                                    type: 'array',
+                                                    items: { '$ref': '#/components/schemas/NewsletterSubscriber' }
+                                                },
+                                                pagination: {
+                                                    type: 'object',
+                                                    properties: {
+                                                        page: { type: 'integer' },
+                                                        limit: { type: 'integer' },
+                                                        total: { type: 'integer' },
+                                                        totalPages: { type: 'integer' }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/campaigns': {
+            get: {
+                summary: 'Listar campanhas (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'page',
+                        in: 'query',
+                        schema: { type: 'integer', default: 1 }
+                    },
+                    {
+                        name: 'limit',
+                        in: 'query',
+                        schema: { type: 'integer', default: 20 }
+                    },
+                    {
+                        name: 'status',
+                        in: 'query',
+                        schema: { type: 'string' }
+                    },
+                    {
+                        name: 'type',
+                        in: 'query',
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Lista de campanhas',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'object',
+                                            properties: {
+                                                campaigns: {
+                                                    type: 'array',
+                                                    items: { '$ref': '#/components/schemas/NewsletterCampaign' }
+                                                },
+                                                pagination: { type: 'object' }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            },
+            post: {
+                summary: 'Criar campanha (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: { '$ref': '#/components/schemas/NewsletterCampaignRequest' }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Campanha criada com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        message: { type: 'string' },
+                                        data: { '$ref': '#/components/schemas/NewsletterCampaign' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/campaigns/{id}': {
+            get: {
+                summary: 'Detalhes da campanha (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Detalhes da campanha',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: { '$ref': '#/components/schemas/NewsletterCampaign' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '404': { description: 'Campanha não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/campaigns/{id}/send': {
+            post: {
+                summary: 'Enviar campanha (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Campanha enviada com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        message: { type: 'string' },
+                                        data: {
+                                            type: 'object',
+                                            properties: {
+                                                sentCount: { type: 'integer' },
+                                                errorCount: { type: 'integer' },
+                                                totalSubscribers: { type: 'integer' }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Campanha não pode ser enviada no estado atual' },
+                    '404': { description: 'Campanha não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/campaigns/{id}/cancel': {
+            post: {
+                summary: 'Cancelar campanha (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': { description: 'Campanha cancelada com sucesso' },
+                    '400': { description: 'Campanha não pode ser cancelada' },
+                    '404': { description: 'Campanha não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/campaigns/{id}/stats': {
+            get: {
+                summary: 'Estatísticas da campanha (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Estatísticas da campanha',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: { '$ref': '#/components/schemas/NewsletterCampaignStats' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '404': { description: 'Campanha não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/templates': {
+            get: {
+                summary: 'Listar templates (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'type',
+                        in: 'query',
+                        schema: { type: 'string' }
+                    },
+                    {
+                        name: 'isActive',
+                        in: 'query',
+                        schema: { type: 'boolean', default: true }
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Lista de templates',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: { '$ref': '#/components/schemas/NewsletterTemplate' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            },
+            post: {
+                summary: 'Criar template (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['name', 'content'],
+                                properties: {
+                                    name: { type: 'string' },
+                                    description: { type: 'string' },
+                                    content: { type: 'string' },
+                                    variables: { type: 'object' },
+                                    type: {
+                                        type: 'string',
+                                        enum: ['GENERAL', 'WELCOME', 'PROMOTIONAL', 'NEW_ARRIVALS', 'ABANDONED_CART', 'WIN_BACK', 'SEASONAL'],
+                                        default: 'GENERAL'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': {
+                        description: 'Template criado com sucesso',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        message: { type: 'string' },
+                                        data: { '$ref': '#/components/schemas/NewsletterTemplate' }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/templates/{id}': {
+            put: {
+                summary: 'Atualizar template (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    name: { type: 'string' },
+                                    description: { type: 'string' },
+                                    content: { type: 'string' },
+                                    variables: { type: 'object' },
+                                    type: { type: 'string' },
+                                    isActive: { type: 'boolean' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Template atualizado com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '404': { description: 'Template não encontrado' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            },
+            delete: {
+                summary: 'Remover template (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': { description: 'Template removido com sucesso' },
+                    '404': { description: 'Template não encontrado' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/tags': {
+            get: {
+                summary: 'Listar tags (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                responses: {
+                    '200': {
+                        description: 'Lista de tags',
+                        content: {
+                            'application/json': {
+                                schema: {
+                                    type: 'object',
+                                    properties: {
+                                        success: { type: 'boolean' },
+                                        data: {
+                                            type: 'array',
+                                            items: { '$ref': '#/components/schemas/NewsletterTag' }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            },
+            post: {
+                summary: 'Criar tag (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                required: ['name'],
+                                properties: {
+                                    name: { type: 'string' },
+                                    color: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '201': { description: 'Tag criada com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/tags/{id}': {
+            put: {
+                summary: 'Atualizar tag (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                requestBody: {
+                    required: true,
+                    content: {
+                        'application/json': {
+                            schema: {
+                                type: 'object',
+                                properties: {
+                                    name: { type: 'string' },
+                                    color: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                },
+                responses: {
+                    '200': { description: 'Tag atualizada com sucesso' },
+                    '400': { description: 'Dados inválidos' },
+                    '404': { description: 'Tag não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            },
+            delete: {
+                summary: 'Remover tag (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'id',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': { description: 'Tag removida com sucesso' },
+                    '404': { description: 'Tag não encontrada' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/subscribers/{subscriberId}/tags/{tagId}': {
+            post: {
+                summary: 'Adicionar tag ao subscritor (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'subscriberId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    },
+                    {
+                        name: 'tagId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': { description: 'Tag adicionada ao subscritor com sucesso' },
+                    '409': { description: 'Tag já atribuída ao subscritor' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            },
+            delete: {
+                summary: 'Remover tag do subscritor (Admin)',
+                tags: ['Newsletter - Admin'],
+                security: [{ bearerAuth: [] }],
+                parameters: [
+                    {
+                        name: 'subscriberId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    },
+                    {
+                        name: 'tagId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': { description: 'Tag removida do subscritor com sucesso' },
+                    '404': { description: 'Tag não encontrada no subscritor' },
+                    '401': { description: 'Não autenticado' },
+                    '403': { description: 'Sem permissão' }
+                }
+            }
+        },
+        '/newsletter/track/open/{campaignId}/{subscriberId}': {
+            get: {
+                summary: 'Tracking de abertura de email (público)',
+                tags: ['Newsletter - Tracking'],
+                parameters: [
+                    {
+                        name: 'campaignId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    },
+                    {
+                        name: 'subscriberId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    }
+                ],
+                responses: {
+                    '200': {
+                        description: 'Pixel de tracking 1x1',
+                        content: {
+                            'image/gif': {
+                                schema: { type: 'string', format: 'binary' }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        '/newsletter/track/click/{campaignId}/{subscriberId}': {
+            get: {
+                summary: 'Tracking de clique em email (público)',
+                tags: ['Newsletter - Tracking'],
+                parameters: [
+                    {
+                        name: 'campaignId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    },
+                    {
+                        name: 'subscriberId',
+                        in: 'path',
+                        required: true,
+                        schema: { type: 'string' }
+                    },
+                    {
+                        name: 'url',
+                        in: 'query',
+                        schema: { type: 'string' },
+                        description: 'URL para onde redirecionar após tracking'
+                    }
+                ],
+                responses: {
+                    '302': { description: 'Redirecionamento para URL de destino' },
+                    '200': { description: 'Clique registado com sucesso' }
                 }
             }
         }

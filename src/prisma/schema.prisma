@@ -31,6 +31,10 @@ model User {
   group     UserGroup?     @relation(fields: [groupId], references: [id])
   permissions Permission[] @relation("UserPermissions")
   supplierOrders SupplierOrder[]
+  
+  // Newsletter relations
+  newsletterCampaigns NewsletterCampaign[]
+  newsletterTemplates NewsletterTemplate[]
 }
 
 model Product {
@@ -392,4 +396,154 @@ model SupplierOrderItem {
   
   @@index([supplierOrderId])
   @@index([productId])
+}
+
+// === NEWSLETTER SYSTEM ===
+model NewsletterSubscriber {
+  id            String   @id @default(cuid()) @db.VarChar(25)
+  email         String   @unique @db.VarChar(255)
+  firstName     String?  @db.VarChar(100)
+  lastName      String?  @db.VarChar(100)
+  isActive      Boolean  @default(true)
+  preferences   Json?    // Newsletter preferences (fashion, sales, new arrivals, etc.)
+  source        String?  @db.VarChar(50) // Where they subscribed (website, popup, checkout, etc.)
+  subscribedAt  DateTime @default(now())
+  unsubscribedAt DateTime?
+  confirmedAt   DateTime? // Double opt-in confirmation
+  
+  // Relations
+  campaigns     NewsletterCampaignSent[]
+  tags          NewsletterSubscriberTag[]
+  
+  @@index([email])
+  @@index([isActive])
+  @@index([subscribedAt])
+  @@map("newsletter_subscribers")
+}
+
+model NewsletterTag {
+  id         String @id @default(cuid()) @db.VarChar(25)
+  name       String @unique @db.VarChar(50)
+  color      String? @db.VarChar(7) // Hex color for UI
+  createdAt  DateTime @default(now())
+  
+  // Relations
+  subscribers NewsletterSubscriberTag[]
+  campaigns   NewsletterCampaignTag[]
+  
+  @@map("newsletter_tags")
+}
+
+model NewsletterSubscriberTag {
+  id           String @id @default(cuid()) @db.VarChar(25)
+  subscriberId String @db.VarChar(25)
+  tagId        String @db.VarChar(25)
+  
+  // Relations
+  subscriber   NewsletterSubscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  tag          NewsletterTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([subscriberId, tagId])
+  @@map("newsletter_subscriber_tags")
+}
+
+model NewsletterCampaign {
+  id           String   @id @default(cuid()) @db.VarChar(25)
+  name         String   @db.VarChar(200)
+  subject      String   @db.VarChar(255)
+  content      String   @db.Text // HTML content
+  plainText    String?  @db.Text // Plain text version
+  status       NewsletterCampaignStatus @default(DRAFT)
+  type         NewsletterType @default(GENERAL)
+  scheduledFor DateTime?
+  sentAt       DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String   @db.VarChar(25) // Admin user ID
+  
+  // Statistics
+  totalSent    Int @default(0)
+  opened       Int @default(0)
+  clicked      Int @default(0)
+  bounced      Int @default(0)
+  unsubscribed Int @default(0)
+  
+  // Relations
+  creator      User     @relation(fields: [createdBy], references: [id])
+  sent         NewsletterCampaignSent[]
+  tags         NewsletterCampaignTag[]
+  
+  @@index([status])
+  @@index([scheduledFor])
+  @@map("newsletter_campaigns")
+}
+
+model NewsletterCampaignTag {
+  id         String @id @default(cuid()) @db.VarChar(25)
+  campaignId String @db.VarChar(25)
+  tagId      String @db.VarChar(25)
+  
+  // Relations
+  campaign   NewsletterCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  tag        NewsletterTag @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  
+  @@unique([campaignId, tagId])
+  @@map("newsletter_campaign_tags")
+}
+model NewsletterCampaignSent {
+  id           String   @id @default(cuid()) @db.VarChar(25)
+  campaignId   String   @db.VarChar(25)
+  subscriberId String   @db.VarChar(25)
+  sentAt       DateTime @default(now())
+  openedAt     DateTime?
+  clickedAt    DateTime?
+  bouncedAt    DateTime?
+  unsubscribedAt DateTime?
+  
+  // Relations
+  campaign     NewsletterCampaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  subscriber   NewsletterSubscriber  @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+  
+  @@unique([campaignId, subscriberId])
+  @@index([sentAt])
+  @@index([openedAt])
+  @@map("newsletter_campaign_sent")
+}
+
+model NewsletterTemplate {
+  id          String   @id @default(cuid()) @db.VarChar(25)
+  name        String   @db.VarChar(200)
+  description String?  @db.VarChar(500)
+  content     String   @db.Text // HTML template
+  variables   Json?    // Available template variables
+  type        NewsletterType @default(GENERAL)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String   @db.VarChar(25)
+  
+  // Relations
+  creator     User     @relation(fields: [createdBy], references: [id])
+  
+  @@index([type])
+  @@index([isActive])
+  @@map("newsletter_templates")
+}
+
+enum NewsletterCampaignStatus {
+  DRAFT
+  SCHEDULED
+  SENDING
+  SENT
+  CANCELLED
+}
+
+enum NewsletterType {
+  GENERAL
+  WELCOME
+  PROMOTIONAL
+  NEW_ARRIVALS
+  ABANDONED_CART
+  WIN_BACK
+  SEASONAL
 }

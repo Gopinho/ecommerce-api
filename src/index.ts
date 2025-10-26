@@ -42,6 +42,7 @@ import dashboardRoutes from './routes/dashboard.routes';
 import telegramRoutes from './routes/telegram.routes';
 import healthRoutes from './routes/health.routes';
 import metricsRoutes from './routes/metrics.routes';
+import newsletterRoutes from './routes/newsletter.routes';
 import * as sseService from './services/sse.service';
 
 const app = express();
@@ -115,6 +116,7 @@ app.use('/dashboard', dashboardRoutes);
 app.use('/telegram', telegramRoutes);
 app.use('/health', healthRoutes);
 app.use('/metrics', metricsRoutes);
+app.use('/newsletter', newsletterRoutes);
 
 app.get('/', (_req, res) => {
     res.send('Servidor Express está a funcionar!');

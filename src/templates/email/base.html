@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{subject}}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .email-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #007cba;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007cba;
+            margin-bottom: 10px;
+        }
+
+        .tagline {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .content {
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            background: #007cba;
+            color: white !important;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .btn:hover {
+            background: #005a87;
+        }
+
+        .footer {
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 30px;
+            font-size: 12px;
+            color: #999;
+            text-align: center;
+        }
+
+        .social-links {
+            margin: 20px 0;
+        }
+
+        .social-links a {
+            display: inline-block;
+            margin: 0 10px;
+            color: #007cba;
+            text-decoration: none;
+        }
+
+        .unsubscribe {
+            margin-top: 20px;
+            font-size: 11px;
+        }
+
+        .unsubscribe a {
+            color: #999;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            .email-container {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="logo">Loja Fashion</div>
+            <div class="tagline">A sua moda, o nosso estilo</div>
+        </div>
+
+        <div class="content">
+            {{content}}
+        </div>
+
+        <div class="social-links">
+            <a href="https://facebook.com/lojafashion">Facebook</a>
+            <a href="https://instagram.com/lojafashion">Instagram</a>
+            <a href="https://twitter.com/lojafashion">Twitter</a>
+        </div>
+
+        <div class="footer">
+            <p><strong>Loja Fashion</strong></p>
+            <p>Rua da Moda, 123, Lisboa, Portugal</p>
+            <p>📞 +351 21 123 456 | ✉️ info@lojafashion.pt</p>
+
+            <div class="unsubscribe">
+                <p>
+                    Se não quiseres mais receber estes emails, podes
+                    <a href="{{unsubscribeUrl}}">cancelar a subscrição</a>.
+                </p>
+                <p>
+                    Também podes <a href="{{preferencesUrl}}">gerir as tuas preferências</a>
+                    para receber apenas o que te interessa.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tracking pixel -->
+    {{trackingPixel}}
+</body>
+
+</html>
